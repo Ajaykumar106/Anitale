@@ -22,5 +22,6 @@ export async function getHistory(userId: string) {
     where: { userId },
     include: { media: true },
     orderBy: { watchedAt: 'desc' },
+    take: 50,
   });
 }

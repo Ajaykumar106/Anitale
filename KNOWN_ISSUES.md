@@ -1,14 +1,15 @@
-# Anitale Known Issues
+# Known Issues & Bug Tracker
 
-This document tracks unresolved issues, technical debt, and areas requiring future attention.
+This document tracks verified bugs and issues reported during the Private Beta.
 
-## Current Issues
+## Open Issues
 
-| ID | Issue Description | Component | Severity | Workaround/Status |
-| :--- | :--- | :--- | :--- | :--- |
-| 001 | In-Memory rate limiting resets on deploy and doesn't sync across multi-node distributed deployments. | `rate-limit.ts` | P2 | Integrate Redis for production distributed deployments. |
-| 002 | Analytics and Logging providers are not strictly hooked up (currently using console.log/error). | Infrastructure | P2 | Hook up Datadog, Sentry, or Posthog. |
-| 003 | Lack of automated DMCA / Copyright automated takedown queue for User reviews. | Admin / Moderation | P3 | Manually moderate via `/admin/moderation`. |
-| 004 | Search does not use fuzzy-matching / typo-tolerance since it relies on native Prisma/PostgreSQL `contains`. | `search.ts` | P3 | Implement Meilisearch or Algolia as outlined in Phase 4 plans. |
+*(No open issues reported yet)*
 
-*(All P0 and P1 blocking issues have been resolved for MVP)*
+## Closed Issues
+
+| ID | Issue | Root Cause | Fix | Date |
+|----|-------|------------|-----|------|
+| #1 | Duplicate key error on Media Detail page | Prisma `include` mapped `media.genres` as an array of nested objects (`{ genre: { name: 'Action' } }`), but React mapped them assuming they were plain strings, causing `[object Object]` duplicate keys. | Coerced the mapping logic to extract the string conditionally (`typeof g === 'string' ? g : g.genre?.name`) for both React components and JSON-LD structured data. | 2026-09-15 |
+| #2 | Cron job endpoint allowed unauthorized execution | The security check `if (process.env.CRON_SECRET && ...)` returned false if the secret was undefined, bypassing the `return 401` block. | Updated logic to fail closed: `if (!secret || authHeader !== ...)` | 2026-09-15 |
+| #3 | Stored XSS vulnerability in Schema.org JSON-LD | TMDB summaries injected raw into `<script dangerouslySetInnerHTML>` could have contained `</script>` escapes. | Escaped `<` characters to `\u003c` in `MediaDetail.tsx`. | 2026-09-15 |

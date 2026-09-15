@@ -19,6 +19,7 @@ export async function getCollections(userId: string) {
     include: {
       _count: { select: { items: true } },
     },
+    take: 50,
   });
 }
 

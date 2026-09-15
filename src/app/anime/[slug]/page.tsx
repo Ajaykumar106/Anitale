@@ -45,6 +45,7 @@ export default async function AnimePage({
     if (!media) notFound();
 
     mappedMedia = {
+      id: (media as any).id,
       externalId: media.externalId,
       type: media.type,
       title: media.title,

@@ -8,10 +8,12 @@ export interface UserProfile {
   completedMediaIds: Set<string>;
   watchlistMediaIds: Set<string>;
   recentActivityMediaIds: Set<string>;
+  dismissedMediaIds: Set<string>;
+  mutedGenreIds: Set<string>;
 }
 
 export async function getUserProfile(userId: string): Promise<UserProfile> {
-  const [history, watchlist, progress, reviews] = await Promise.all([
+  const [history, watchlist, progress, reviews, dismissals, preferences] = await Promise.all([
     prisma.watchHistory.findMany({
       where: { userId },
       orderBy: { watchedAt: 'desc' },
@@ -28,12 +30,29 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     prisma.review.findMany({
       where: { userId },
       include: { media: { include: { genres: true } } }
+    }),
+    prisma.mediaDismissal.findMany({
+      where: { userId },
+      select: { mediaId: true }
+    }),
+    prisma.userPreference.findUnique({
+      where: { userId }
     })
   ]);
 
   const recentActivityMediaIds = new Set(history.map(h => h.mediaId));
   const watchlistMediaIds = new Set(watchlist.map(w => w.mediaId));
   const completedMediaIds = new Set(progress.filter(p => p.isCompleted).map(p => p.mediaId));
+  const dismissedMediaIds = new Set(dismissals.map(d => d.mediaId));
+  
+  let mutedGenreIds = new Set<string>();
+  if (preferences?.mutedGenres) {
+    try {
+      mutedGenreIds = new Set(JSON.parse(preferences.mutedGenres));
+    } catch (e) {
+      // Ignore parse errors
+    }
+  }
   
   // High ratings >= 7 are favorites
   const favoriteMediaIds = new Set(reviews.filter(r => r.rating >= 7).map(r => r.mediaId));
@@ -70,6 +89,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     droppedMediaIds,
     completedMediaIds,
     watchlistMediaIds,
-    recentActivityMediaIds
+    recentActivityMediaIds,
+    dismissedMediaIds,
+    mutedGenreIds
   };
 }

@@ -1,4 +1,6 @@
-// Simple in-memory rate limiter
+// In-memory rate limiter for single-instance scaling.
+// PHASE 30 NOTE: For multi-region / Vercel Edge scaling, replace this `Map` 
+// with @upstash/ratelimit and a Redis KV store.
 const store = new Map<string, { count: number; timestamp: number }>();
 
 export function checkRateLimit(key: string, limit: number, windowMs: number): boolean {
@@ -16,6 +18,7 @@ export function checkRateLimit(key: string, limit: number, windowMs: number): bo
   }
 
   if (record.count >= limit) {
+    console.warn(`[RATE LIMIT EXCEEDED] Key: ${key} | Limit: ${limit}`);
     return false;
   }
 

@@ -60,97 +60,124 @@ export async function getSimilarMedia(mediaId: string, limit: number = 10): Prom
 }
 
 export async function getHomeRecommendations(userId: string, limit: number = 10): Promise<ScoredRecommendation[]> {
-  // 1. Fetch user history and high ratings
-  const history = await prisma.watchHistory.findMany({
-    where: { userId },
-    include: { media: { include: { genres: true } } },
-    orderBy: { watchedAt: 'desc' },
-    take: 20,
-  });
+  const fetcher = async () => {
+    // 1. Fetch diverse user signals
+    const [history, highRatings, watchlist, dismissals] = await Promise.all([
+      prisma.watchHistory.findMany({
+        where: { userId },
+        include: { media: { include: { genres: true } } },
+        orderBy: { watchedAt: 'desc' },
+        take: 30,
+      }),
+      prisma.review.findMany({
+        where: { userId, rating: { gte: 7 } },
+        include: { media: { include: { genres: true } } },
+        take: 20,
+      }),
+      prisma.watchlist.findMany({
+        where: { userId },
+        include: { media: { include: { genres: true } } },
+        take: 30,
+      }),
+      prisma.mediaDismissal.findMany({
+        where: { userId },
+        select: { mediaId: true }
+      })
+    ]);
 
-  const highRatings = await prisma.review.findMany({
-    where: { userId, rating: { gte: 7 } },
-    include: { media: { include: { genres: true } } },
-    take: 20,
-  });
+    const userInteractedMediaIds = new Set([
+      ...history.map(h => h.mediaId),
+      ...highRatings.map(r => r.mediaId),
+      ...watchlist.map(w => w.mediaId),
+      ...dismissals.map(d => d.mediaId)
+    ]);
 
-  const userInteractedMediaIds = new Set([
-    ...history.map(h => h.mediaId),
-    ...highRatings.map(r => r.mediaId)
-  ]);
+    if (userInteractedMediaIds.size === 0) {
+      return getFallbackRecommendations(limit);
+    }
 
-  // If no data, return basic popular/recent
-  if (userInteractedMediaIds.size === 0) {
-    return getFallbackRecommendations(limit);
-  }
-
-  // 2. Build User Profile (Top Genres)
-  const genreCounts: Record<string, { count: number, name: string }> = {};
-  
-  [...history, ...highRatings].forEach(entry => {
-    entry.media.genres.forEach(g => {
-      // We need the genre name, but genreId is enough for grouping.
-      const gid = g.genreId;
-      if (!genreCounts[gid]) genreCounts[gid] = { count: 0, name: gid };
-      genreCounts[gid].count += 1;
-    });
-  });
-
-  // Sort genres by frequency
-  const topGenreIds = Object.entries(genreCounts)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 3)
-    .map(entry => entry[0]);
-
-  // 3. Find candidates
-  const candidates = await prisma.media.findMany({
-    where: {
-      id: { notIn: Array.from(userInteractedMediaIds) },
-      genres: {
-        some: { genreId: { in: topGenreIds } }
-      }
-    },
-    include: { genres: { include: { genre: true } } },
-    take: 100
-  });
-
-  // 4. Score candidates
-  const anchorMedia = history.length > 0 ? history[0].media.title : 'what you watched';
-
-  const scored = candidates.map(candidate => {
-    let score = 0;
+    // 2. Build Weighted User Profile (Genre Affinity)
+    const genreCounts: Record<string, { weight: number, name: string }> = {};
     
-    // Genre match
-    const cGenres = candidate.genres.map(g => g.genreId);
-    const overlap = topGenreIds.filter(id => cGenres.includes(id)).length;
-    score += overlap * 20;
-
-    // Recency (newer is slightly better)
-    if (candidate.releaseDate) {
-      const yearsOld = new Date().getFullYear() - candidate.releaseDate.getFullYear();
-      if (yearsOld <= 2) score += 15;
-      else if (yearsOld <= 5) score += 10;
-    }
-
-    // Reason generation
-    let reason = `Recommended for you`;
-    if (overlap > 0) {
-      const topMatchedGenre = candidate.genres.find(g => topGenreIds.includes(g.genreId))?.genre?.name;
-      if (topMatchedGenre) {
-        reason = `Because you like ${topMatchedGenre}`;
-      } else {
-        reason = `Because you watched ${anchorMedia}`;
-      }
-    }
-
-    return {
-      media: candidate,
-      score,
-      reason
+    // Weight signals differently
+    const addGenreWeight = (media: any, weight: number) => {
+      media.genres.forEach((g: any) => {
+        const gid = g.genreId;
+        if (!genreCounts[gid]) genreCounts[gid] = { weight: 0, name: gid };
+        genreCounts[gid].weight += weight;
+      });
     };
-  });
 
-  return scored.sort((a, b) => b.score - a.score).slice(0, limit);
+    history.forEach(h => addGenreWeight(h.media, 1.0)); // Watched = normal weight
+    watchlist.forEach(w => addGenreWeight(w.media, 1.5)); // Intend to watch = high weight
+    highRatings.forEach(r => addGenreWeight(r.media, 2.0)); // Loved it = very high weight
+
+    const topGenreIds = Object.entries(genreCounts)
+      .sort((a, b) => b[1].weight - a[1].weight)
+      .slice(0, 5)
+      .map(entry => entry[0]);
+
+    // 3. Find candidates excluding interacted and dismissed
+    const candidates = await prisma.media.findMany({
+      where: {
+        id: { notIn: Array.from(userInteractedMediaIds) },
+        genres: {
+          some: { genreId: { in: topGenreIds } }
+        }
+      },
+      include: { genres: { include: { genre: true } } },
+      take: 100 // Pool size for in-memory scoring
+    });
+
+    // 4. Rank candidates
+    const anchorMedia = highRatings.length > 0 ? highRatings[0].media.title : (history.length > 0 ? history[0].media.title : 'what you like');
+
+    const scored = candidates.map(candidate => {
+      let score = 0;
+      
+      // Genre affinity match
+      const cGenres = candidate.genres.map(g => g.genreId);
+      const overlapWeight = cGenres.reduce((acc, gid) => {
+        return acc + (genreCounts[gid]?.weight || 0);
+      }, 0);
+      score += overlapWeight * 5;
+
+      // Recency
+      if (candidate.releaseDate) {
+        const yearsOld = new Date().getFullYear() - candidate.releaseDate.getFullYear();
+        if (yearsOld <= 1) score += 20;
+        else if (yearsOld <= 3) score += 10;
+      }
+
+      // Reason generation based on top overlapping genre
+      let reason = `Recommended for you`;
+      if (overlapWeight > 0) {
+        const topMatchedGenre = candidate.genres
+          .filter(g => topGenreIds.includes(g.genreId))
+          .sort((a, b) => (genreCounts[b.genreId]?.weight || 0) - (genreCounts[a.genreId]?.weight || 0))[0]?.genre?.name;
+          
+        if (topMatchedGenre) {
+          reason = `Because you like ${topMatchedGenre}`;
+        } else {
+          reason = `Because you watched ${anchorMedia}`;
+        }
+      }
+
+      return {
+        media: candidate,
+        score,
+        reason
+      };
+    });
+
+    // Sort by score and introduce slight randomization for diversity
+    return scored
+      .sort((a, b) => b.score - a.score + (Math.random() * 10 - 5)) // +/- 5 points randomness
+      .slice(0, limit);
+  };
+
+  const cached = withCache(fetcher, [`home-recs-${userId}`, limit.toString()], 1800); // 30 mins TTL
+  return await cached();
 }
 
 export async function getFallbackRecommendations(limit: number = 10): Promise<ScoredRecommendation[]> {

@@ -46,6 +46,7 @@ export default async function MoviePage({
     if (!media) notFound();
 
     mappedMedia = {
+      id: (media as any).id,
       externalId: media.externalId,
       type: media.type,
       title: media.title,

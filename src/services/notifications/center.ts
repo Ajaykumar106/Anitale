@@ -1,15 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import { NotificationType } from '@prisma/client';
+import { sendEmailNotification } from './email';
 
 export async function createNotification(data: {
   userId: string;
   type: NotificationType;
   title: string;
   message: string;
+  link?: string;
   mediaId?: string;
 }) {
-  // Prevent duplicate notifications: check if an identical unread notification exists
-  // for the same type, title, and mediaId within the last 24 hours.
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
 
@@ -27,9 +27,23 @@ export async function createNotification(data: {
     return existing; // Skip creation if it already exists recently
   }
 
-  return prisma.notification.create({
+  const notification = await prisma.notification.create({
     data
   });
+
+  // Optionally send email based on type
+  if (data.type === 'NEW_EPISODE' || data.type === 'FOLLOW') {
+    const html = `
+      <div style="font-family: sans-serif; padding: 20px;">
+        <h2>${data.title}</h2>
+        <p>${data.message}</p>
+        ${data.link ? `<a href="https://anitale.app${data.link}">View Details</a>` : ''}
+      </div>
+    `;
+    await sendEmailNotification(data.userId, data.title, html);
+  }
+
+  return notification;
 }
 
 export async function getUserNotifications(userId: string, unreadOnly: boolean = false) {

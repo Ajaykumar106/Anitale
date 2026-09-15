@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MediaCard } from '@/components/media/MediaCard';
 import { MediaRow } from '@/components/media/MediaRow';
+import { MediaRowSkeleton } from '@/components/media/MediaRowSkeleton';
 import { SectionHeader } from '@/components/media/SectionHeader';
 import { ScoredRecommendation } from '@/services/recommendations/engine';
 
@@ -25,7 +26,16 @@ export function PersonalizedHomeFeeds() {
       .catch(console.error);
   }, []);
 
-  if (!feeds) return null; // Or a skeleton
+  if (!feeds) {
+    return (
+      <div className="space-y-8">
+        <section>
+          <SectionHeader title="Recommendations For You" />
+          <MediaRowSkeleton />
+        </section>
+      </div>
+    );
+  }
 
   const renderFeed = (title: string, data: ScoredRecommendation[]) => {
     if (!data || data.length === 0) return null;
@@ -37,10 +47,12 @@ export function PersonalizedHomeFeeds() {
             <div key={`${title}-${rec.media.id}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
               <MediaCard
                 id={rec.media.externalId}
+                internalId={rec.media.id}
                 title={rec.media.title}
                 type={rec.media.type}
                 posterPath={rec.media.posterPath}
                 year={rec.media.releaseDate ? new Date(rec.media.releaseDate).getFullYear() : undefined}
+                showDismiss={true}
               />
               <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{rec.reason}</p>
             </div>

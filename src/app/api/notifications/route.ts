@@ -11,7 +11,8 @@ export async function GET(request: Request) {
 
   try {
     const notifications = await getUserNotifications(session.user.id, unreadOnly);
-    return NextResponse.json(notifications);
+    const unreadCount = unreadOnly ? notifications.length : notifications.filter(n => !n.isRead).length;
+    return NextResponse.json({ notifications, unreadCount });
   } catch (_error) {
     return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 });
   }

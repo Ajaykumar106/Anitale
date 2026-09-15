@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { SearchBar } from '@/components/search/SearchBar';
 import { auth } from '@/lib/auth';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 export async function Navbar() {
   const session = await auth();
@@ -39,7 +40,14 @@ export async function Navbar() {
           <nav className="hidden md:flex items-center space-x-4">
             {session?.user ? (
               <>
+                <NotificationBell />
                 <Link href="/watchlist" className="text-sm font-medium transition-colors hover:text-foreground/80">Watchlist</Link>
+                <Link href="/calendar" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+                  Calendar
+                </Link>
+                <Link href="/feedback" className="text-sm font-medium text-yellow-500 transition-colors hover:text-yellow-400">
+                  Beta Feedback
+                </Link>
                 <Link href="/profile" className="text-sm font-medium transition-colors hover:text-foreground/80">Profile</Link>
                 <Link href="/api/auth/signout" className="text-sm font-medium transition-colors text-destructive hover:text-destructive/80">Logout</Link>
               </>

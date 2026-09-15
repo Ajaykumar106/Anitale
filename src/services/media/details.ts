@@ -3,13 +3,14 @@ import { MediaType } from '@prisma/client';
 import { TMDBAdapter } from '@/providers/tmdb/adapter';
 import { importMedia } from './import';
 import { CACHE_TTL, withCache } from '@/lib/cache';
+import { cache } from 'react';
 
 const tmdb = new TMDBAdapter(process.env.TMDB_API_KEY || 'dummy_key');
 
 // Cache duration 24 hours
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
-export async function getMediaDetails(externalId: string, type: MediaType) {
+export const getMediaDetails = cache(async (externalId: string, type: MediaType) => {
   let localMedia = null;
 
   // Try checking local database cache first
@@ -90,4 +91,4 @@ export async function getMediaDetails(externalId: string, type: MediaType) {
     if (localMedia) return localMedia;
     throw new Error('Media not found');
   }
-}
+});

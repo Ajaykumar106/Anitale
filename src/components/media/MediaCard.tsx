@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { MediaType } from '@prisma/client';
 import { PosterImage } from './PosterImage';
 
+import { DismissButton } from '@/components/recommendations/DismissButton';
+
 export interface MediaCardProps {
   id: string; // Database ID or external ID
   title: string;
@@ -10,9 +12,11 @@ export interface MediaCardProps {
   year?: number;
   rating?: number;
   priority?: boolean;
+  showDismiss?: boolean;
+  internalId?: string; // used for dismissal since we need Prisma ID, not TMDB ID
 }
 
-export function MediaCard({ id, title, type, posterPath, year, rating, priority }: MediaCardProps) {
+export function MediaCard({ id, title, type, posterPath, year, rating, priority, showDismiss, internalId }: MediaCardProps) {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const route = type === MediaType.MOVIE ? `/movie/${slug}-${id}` : type === MediaType.SERIES ? `/show/${slug}-${id}` : `/anime/${slug}-${id}`;
 
@@ -25,6 +29,7 @@ export function MediaCard({ id, title, type, posterPath, year, rating, priority 
           priority={priority}
           className="h-full w-full object-cover"
         />
+        {showDismiss && internalId && <DismissButton mediaId={internalId} />}
         {rating !== undefined && (
           <div className="absolute top-2 right-2 rounded bg-black/70 px-1.5 py-0.5 text-xs font-bold text-white backdrop-blur-md">
             ★ {rating.toFixed(1)}

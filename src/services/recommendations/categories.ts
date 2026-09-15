@@ -3,19 +3,20 @@ import { getCandidates } from './candidates';
 import { scoreCandidates } from './scoring';
 import { prisma } from '@/lib/prisma';
 import { ScoredRecommendation } from './engine';
-import { withMemoryCache } from '@/lib/cache';
+import { withCache } from '@/lib/cache';
 
 export async function getTrendingForYou(userId: string, limit: number = 10): Promise<ScoredRecommendation[]> {
-  return withMemoryCache(`trending-${userId}`, async () => {
+  const fetcher = async () => {
     const profile = await getUserProfile(userId);
     const candidates = await getCandidates(profile, 'TRENDING', 50);
     const scored = scoreCandidates(candidates, profile);
     return scored.sort((a, b) => b.score - a.score).slice(0, limit);
-  }, 3600); // 1 hour cache
+  };
+  return withCache(fetcher, [`trending-${userId}`], 3600)();
 }
 
 export async function getYouMightLike(userId: string, limit: number = 10): Promise<ScoredRecommendation[]> {
-  return withMemoryCache(`might-like-${userId}`, async () => {
+  const fetcher = async () => {
     const profile = await getUserProfile(userId);
     const candidates = await getCandidates(profile, 'NEW_RELEASES', 60);
     const scored = scoreCandidates(candidates, profile);
@@ -27,7 +28,8 @@ export async function getYouMightLike(userId: string, limit: number = 10): Promi
     }));
 
     return variedScores.sort((a, b) => b.score - a.score).slice(0, limit);
-  }, 3600);
+  };
+  return withCache(fetcher, [`might-like-${userId}`], 3600)();
 }
 
 export async function getBecauseYouWatched(userId: string, mediaId: string, limit: number = 10): Promise<ScoredRecommendation[]> {
@@ -44,7 +46,7 @@ export async function getBecauseYouWatched(userId: string, mediaId: string, limi
 }
 
 export async function getHiddenGems(userId: string, limit: number = 10): Promise<ScoredRecommendation[]> {
-  return withMemoryCache(`hidden-gems-${userId}`, async () => {
+  const fetcher = async () => {
     const profile = await getUserProfile(userId);
     const candidates = await getCandidates(profile, 'HIDDEN_GEMS', 50);
     const scored = scoreCandidates(candidates, profile);
@@ -54,7 +56,8 @@ export async function getHiddenGems(userId: string, limit: number = 10): Promise
       ...s,
       reason: 'Hidden Gem'
     }));
-  }, 3600);
+  };
+  return withCache(fetcher, [`hidden-gems-${userId}`], 3600)();
 }
 
 export async function getContinueWatching(userId: string): Promise<ScoredRecommendation[]> {

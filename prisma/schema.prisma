@@ -42,6 +42,8 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role      @default(USER)
+  inviteCode    String?   @unique // The code this user gives to others
+  referredBy    String?   // The ID of the user who referred them
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -53,6 +55,7 @@ model User {
   watchHistory         WatchHistory[]
   watchProgress        WatchProgress[]
   reviews              Review[]
+  feedback             Feedback[]
   followers            Follow[]                @relation("following")
   following            Follow[]                @relation("follower")
   comments             Comment[]
@@ -65,6 +68,8 @@ model User {
   releaseSubscriptions ReleaseSubscription[]
   notifications        Notification[]
   notificationPref     NotificationPreference?
+  preferences          UserPreference?
+  dismissals           MediaDismissal[]
 }
 
 model VerificationToken {
@@ -134,6 +139,7 @@ model Media {
   PlaybackSession           PlaybackSession[]
   releaseSubscriptions      ReleaseSubscription[]
   notifications             Notification[]
+  dismissals                MediaDismissal[]
 
   @@unique([externalId, type])
   @@index([title])
@@ -577,6 +583,8 @@ model NotificationPreference {
   releaseReminder    Boolean  @default(true)
   availabilityChange Boolean  @default(true)
   recommendations    Boolean  @default(true)
+  emailNotifications Boolean  @default(true) // Should they receive emails?
+  social             Boolean  @default(true) // Follows, replies
   updatedAt          DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -588,6 +596,8 @@ enum NotificationType {
   RELEASE_REMINDER
   AVAILABILITY_CHANGE
   RECOMMENDATION
+  REPLY
+  FOLLOW
 }
 
 model Notification {
@@ -596,6 +606,7 @@ model Notification {
   type      NotificationType
   title     String
   message   String           @db.Text
+  link      String?          // URL to redirect on click
   isRead    Boolean          @default(false)
   mediaId   String?
   createdAt DateTime         @default(now())
@@ -645,4 +656,48 @@ model BackgroundJob {
 
   @@index([status, runAt])
   @@index([type])
+}
+
+model Feedback {
+  id               String   @id @default(cuid())
+  userId           String?
+  category         String   // BUG, FEATURE_REQUEST, CONTENT_ISSUE, UX_ISSUE
+  severity         String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  status           String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  stepsToReproduce String?  @db.Text
+  expectedBehavior String   @db.Text
+  actualBehavior   String   @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([category])
+  @@index([userId])
+}
+
+model UserPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  language           String   @default("en")
+  includeAdult       Boolean  @default(false)
+  mutedGenres        String   @default("[]") // JSON string array of genre IDs
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MediaDismissal {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   String
+  reason    String?  // e.g., "NOT_INTERESTED", "SEEN_ELSEWHERE"
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([userId])
 }

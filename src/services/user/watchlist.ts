@@ -37,6 +37,7 @@ export async function getWatchlist(userId: string) {
     where: { userId },
     include: { media: true },
     orderBy: { createdAt: 'desc' },
+    take: 100,
   });
 
   return watchlist.map((item) => item.media);

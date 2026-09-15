@@ -12,16 +12,21 @@ export async function getCandidates(
 ): Promise<MediaWithGenres[]> {
   const excludedIds = [
     ...Array.from(userProfile.droppedMediaIds),
+    ...Array.from(userProfile.dismissedMediaIds),
     ...(strategy !== 'SIMILAR' ? Array.from(userProfile.completedMediaIds) : []),
     ...(anchorMediaId ? [anchorMediaId] : [])
   ];
 
   let candidates: MediaWithGenres[] = [];
 
+  const genreFilter = userProfile.mutedGenreIds.size > 0 
+    ? { none: { genreId: { in: Array.from(userProfile.mutedGenreIds) } } }
+    : undefined;
+
   switch (strategy) {
     case 'TRENDING':
       candidates = await prisma.media.findMany({
-        where: { id: { notIn: excludedIds } },
+        where: { id: { notIn: excludedIds }, genres: genreFilter },
         orderBy: { updatedAt: 'desc' }, // Proxy for trending interactions
         take: limit,
         include: { genres: true }
@@ -33,7 +38,8 @@ export async function getCandidates(
       candidates = await prisma.media.findMany({
         where: {
           id: { notIn: excludedIds },
-          releaseDate: { lte: new Date(new Date().setFullYear(new Date().getFullYear() - 5)) }
+          releaseDate: { lte: new Date(new Date().setFullYear(new Date().getFullYear() - 5)) },
+          genres: genreFilter
         },
         take: limit,
         include: { genres: true }
@@ -44,7 +50,8 @@ export async function getCandidates(
       candidates = await prisma.media.findMany({
         where: {
           id: { notIn: excludedIds },
-          releaseDate: { gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) }
+          releaseDate: { gte: new Date(new Date().setMonth(new Date().getMonth() - 6)) },
+          genres: genreFilter
         },
         orderBy: { releaseDate: 'desc' },
         take: limit,
@@ -64,7 +71,7 @@ export async function getCandidates(
             where: {
               id: { notIn: excludedIds },
               type: anchor.type,
-              genres: { some: { genreId: { in: anchorGenreIds } } }
+              genres: { some: { genreId: { in: anchorGenreIds } }, ...(genreFilter || {}) }
             },
             take: limit,
             include: { genres: true }

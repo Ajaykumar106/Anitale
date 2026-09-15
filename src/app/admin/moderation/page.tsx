@@ -3,6 +3,7 @@ import { getReportQueue } from '@/services/community/moderation';
 import { redirect } from 'next/navigation';
 
 import { Report } from '@prisma/client';
+import { ModerationActions } from './ModerationActions';
 
 export default async function ModerationQueuePage() {
   const session = await auth();
@@ -56,17 +57,7 @@ export default async function ModerationQueuePage() {
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <button className="bg-primary text-primary-foreground text-xs px-3 py-1.5 rounded font-medium">
-                  Dismiss Report
-                </button>
-                <button className="bg-destructive text-destructive-foreground text-xs px-3 py-1.5 rounded font-medium">
-                  Delete Content
-                </button>
-                <button className="border text-xs px-3 py-1.5 rounded font-medium">
-                  Ban User
-                </button>
-              </div>
+              <ModerationActions report={report} />
             </div>
           ))}
         </div>
