@@ -1,0 +1,648 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth Models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts             Account[]
+  sessions             Session[]
+  profile              Profile?
+  watchlists           Watchlist[]
+  collections          Collection[]
+  watchHistory         WatchHistory[]
+  watchProgress        WatchProgress[]
+  reviews              Review[]
+  followers            Follow[]                @relation("following")
+  following            Follow[]                @relation("follower")
+  comments             Comment[]
+  auditLogs            AuditLog[]
+  likes                Like[]
+  blocking             Block[]                 @relation("blocker")
+  blockedBy            Block[]                 @relation("blocked")
+  reports              Report[]
+  PlaybackSession      PlaybackSession[]
+  releaseSubscriptions ReleaseSubscription[]
+  notifications        Notification[]
+  notificationPref     NotificationPreference?
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum Role {
+  USER
+  MODERATOR
+  EDITOR
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Domain Models
+
+model Profile {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  bio       String?
+  avatarUrl String?
+  location  String?
+  website   String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum MediaType {
+  MOVIE
+  SERIES
+  ANIME
+}
+
+model Media {
+  id            String    @id @default(cuid())
+  externalId    String // e.g., TMDB ID or AniList ID
+  type          MediaType
+  title         String
+  originalTitle String?
+  overview      String?   @db.Text
+  posterPath    String?
+  backdropPath  String?
+  releaseDate   DateTime?
+  status        String?
+  runtime       Int? // In minutes
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  alternativeTitles MediaAlternativeTitle[]
+  genres            MediaGenre[]
+  cast              Cast[]
+  crew              Crew[]
+  seasons           Season[]
+  availability      ProviderAvailability[]
+  releases          Release[]
+
+  watchlists                Watchlist[]
+  collectionItems           CollectionItem[]
+  watchHistory              WatchHistory[]
+  watchProgress             WatchProgress[]
+  reviews                   Review[]
+  VideoProviderMediaMapping VideoProviderMediaMapping[]
+  PlaybackSession           PlaybackSession[]
+  releaseSubscriptions      ReleaseSubscription[]
+  notifications             Notification[]
+
+  @@unique([externalId, type])
+  @@index([title])
+}
+
+model MediaAlternativeTitle {
+  id       String  @id @default(cuid())
+  mediaId  String
+  title    String
+  language String? // ISO 639-1 code
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId])
+  @@index([title])
+}
+
+model Genre {
+  id    String       @id @default(cuid())
+  name  String       @unique
+  media MediaGenre[]
+}
+
+model MediaGenre {
+  mediaId String
+  genreId String
+
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  genre Genre @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([mediaId, genreId])
+  @@index([genreId])
+}
+
+model Person {
+  id          String  @id @default(cuid())
+  externalId  String  @unique
+  name        String
+  profilePath String?
+  biography   String? @db.Text
+
+  cast Cast[]
+  crew Crew[]
+}
+
+model Cast {
+  id        String @id @default(cuid())
+  mediaId   String
+  personId  String
+  character String
+  order     Int    @default(0)
+
+  media  Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, personId, character])
+  @@index([mediaId])
+  @@index([personId])
+}
+
+model Crew {
+  id         String @id @default(cuid())
+  mediaId    String
+  personId   String
+  department String
+  job        String
+
+  media  Media  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, personId, job])
+  @@index([mediaId])
+  @@index([personId])
+}
+
+model Season {
+  id           String    @id @default(cuid())
+  mediaId      String
+  externalId   String?
+  seasonNumber Int
+  name         String?
+  overview     String?   @db.Text
+  airDate      DateTime?
+  posterPath   String?
+
+  media    Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  episodes Episode[]
+  releases Release[]
+
+  @@unique([mediaId, seasonNumber])
+  @@index([mediaId])
+}
+
+model Episode {
+  id            String    @id @default(cuid())
+  seasonId      String
+  externalId    String?
+  episodeNumber Int
+  name          String?
+  overview      String?   @db.Text
+  airDate       DateTime?
+  stillPath     String?
+  runtime       Int?
+
+  season                      Season                        @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  VideoProviderEpisodeMapping VideoProviderEpisodeMapping[]
+  releases                    Release[]
+
+  @@unique([seasonId, episodeNumber])
+  @@index([seasonId])
+}
+
+model Provider {
+  id         String  @id @default(cuid())
+  externalId String  @unique
+  name       String
+  logoPath   String?
+
+  availability ProviderAvailability[]
+}
+
+enum AvailabilityType {
+  STREAM
+  RENT
+  BUY
+  FREE
+}
+
+model ProviderAvailability {
+  id         String           @id @default(cuid())
+  mediaId    String
+  providerId String
+  region     String // ISO 3166-1 alpha-2
+  type       AvailabilityType
+  link       String?
+
+  media    Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaId, providerId, region, type])
+  @@index([mediaId])
+  @@index([region])
+}
+
+model Release {
+  id          String   @id @default(cuid())
+  mediaId     String
+  seasonId    String?
+  episodeId   String?
+  region      String? // ISO 3166-1 alpha-2
+  releaseDate DateTime
+  type        String // e.g., "Theatrical", "Digital", "Physical", "Episode"
+  note        String?
+
+  media   Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  season  Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  episode Episode? @relation(fields: [episodeId], references: [id], onDelete: SetNull)
+
+  @@index([mediaId])
+  @@index([releaseDate])
+}
+
+// User Action Models (from Phase 1)
+
+model Watchlist {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([userId])
+  @@index([mediaId])
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  user  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CollectionItem[]
+}
+
+model CollectionItem {
+  id           String @id @default(cuid())
+  collectionId String
+  mediaId      String
+  order        Int
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  media      Media      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, mediaId])
+}
+
+model WatchHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   String
+  episodeId String?
+  watchedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WatchProgress {
+  id              String   @id @default(cuid())
+  userId          String
+  mediaId         String
+  seasonNumber    Int?
+  episodeNumber   Int?
+  progressSeconds Int      @default(0)
+  isCompleted     Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId, seasonNumber, episodeNumber])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  mediaId     String
+  rating      Int
+  content     String?  @db.Text
+  hasSpoilers Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media    Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  comments Comment[]
+  likes    Like[]
+  reports  Report[]
+
+  @@unique([userId, mediaId])
+  @@index([mediaId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  reports Report[]
+
+  @@index([reviewId])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+enum ReportTargetType {
+  REVIEW
+  COMMENT
+  USER
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id         String           @id @default(cuid())
+  reporterId String
+  targetType ReportTargetType
+  targetId   String
+  reason     String           @db.Text
+  status     ReportStatus     @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  // Optional relations for cascade deletes
+  review  Review?  @relation(fields: [targetId], references: [id], map: "Report_review_fkey", onDelete: Cascade)
+  comment Comment? @relation(fields: [targetId], references: [id], map: "Report_comment_fkey", onDelete: Cascade)
+
+  @@index([status])
+}
+
+// Phase 8: Video Provider Abstraction
+
+model VideoProvider {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  isEnabled Boolean  @default(true)
+  priority  Int      @default(0) // Higher number = higher priority
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  configurations  VideoProviderConfiguration[]
+  healthChecks    VideoProviderHealth[]
+  mediaMappings   VideoProviderMediaMapping[]
+  episodeMappings VideoProviderEpisodeMapping[]
+  sessions        PlaybackSession[]
+}
+
+model VideoProviderConfiguration {
+  id              String  @id @default(cuid())
+  videoProviderId String
+  key             String
+  value           String  @db.Text
+  isSecret        Boolean @default(false)
+
+  provider VideoProvider @relation(fields: [videoProviderId], references: [id], onDelete: Cascade)
+
+  @@unique([videoProviderId, key])
+}
+
+model VideoProviderHealth {
+  id              String   @id @default(cuid())
+  videoProviderId String
+  status          String // e.g., 'HEALTHY', 'DEGRADED', 'DOWN'
+  latencyMs       Int?
+  lastCheck       DateTime @default(now())
+  errorMessage    String?  @db.Text
+
+  provider VideoProvider @relation(fields: [videoProviderId], references: [id], onDelete: Cascade)
+
+  @@index([videoProviderId])
+}
+
+model VideoProviderMediaMapping {
+  id              String @id @default(cuid())
+  videoProviderId String
+  mediaId         String
+  providerMediaId String // ID used by the specific provider
+
+  provider VideoProvider @relation(fields: [videoProviderId], references: [id], onDelete: Cascade)
+  media    Media         @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([videoProviderId, mediaId])
+  @@index([mediaId])
+}
+
+model VideoProviderEpisodeMapping {
+  id                String @id @default(cuid())
+  videoProviderId   String
+  episodeId         String
+  providerEpisodeId String
+
+  provider VideoProvider @relation(fields: [videoProviderId], references: [id], onDelete: Cascade)
+  episode  Episode       @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@unique([videoProviderId, episodeId])
+  @@index([episodeId])
+}
+
+model PlaybackSession {
+  id              String   @id @default(cuid())
+  userId          String?
+  videoProviderId String
+  mediaId         String
+  episodeId       String?
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  provider VideoProvider @relation(fields: [videoProviderId], references: [id], onDelete: Cascade)
+  media    Media         @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user     User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([videoProviderId])
+  @@index([mediaId])
+}
+
+// Phase 10: Release Intelligence
+
+model ReleaseSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  mediaId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, mediaId])
+  @@index([mediaId])
+}
+
+model NotificationPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  newEpisode         Boolean  @default(true)
+  newSeason          Boolean  @default(true)
+  releaseReminder    Boolean  @default(true)
+  availabilityChange Boolean  @default(true)
+  recommendations    Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum NotificationType {
+  NEW_EPISODE
+  NEW_SEASON
+  RELEASE_REMINDER
+  AVAILABILITY_CHANGE
+  RECOMMENDATION
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  isRead    Boolean          @default(false)
+  mediaId   String?
+  createdAt DateTime         @default(now())
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media? @relation(fields: [mediaId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  resource  String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model AnalyticsEvent {
+  id        String   @id @default(cuid())
+  eventName String
+  userId    String?  // Optional, for anonymous tracking
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventName, createdAt])
+  @@index([createdAt])
+}
+
+model BackgroundJob {
+  id           String    @id @default(cuid())
+  type         String    // e.g., 'SYNC_RELEASES', 'UPDATE_PROVIDER_AVAILABILITY'
+  payload      Json?
+  status       String    @default("PENDING") // PENDING, RUNNING, COMPLETED, FAILED
+  attempts     Int       @default(0)
+  maxAttempts  Int       @default(3)
+  lastError    String?   @db.Text
+  lockedAt     DateTime?
+  lockedBy     String?   // Worker ID
+  runAt        DateTime  @default(now())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status, runAt])
+  @@index([type])
+}

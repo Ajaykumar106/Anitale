@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: anitale_user
+      POSTGRES_PASSWORD: anitale_password
+      POSTGRES_DB: anitale_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - anitale_pgdata:/var/lib/postgresql/data
+
+volumes:
+  anitale_pgdata:
