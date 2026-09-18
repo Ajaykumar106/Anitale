@@ -10,16 +10,7 @@ export default function SignupPage() {
           <p className="text-sm text-muted-foreground">Sign up to start tracking your media</p>
         </div>
         <div className="grid gap-4">
-          <form
-            action={async () => {
-              'use server';
-              await signIn('github', { redirectTo: '/profile' });
-            }}
-          >
-            <button className="inline-flex w-full items-center justify-center rounded-md bg-primary px-8 h-10 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90">
-              Sign up with GitHub
-            </button>
-          </form>
+
           <form
             action={async () => {
               'use server';
