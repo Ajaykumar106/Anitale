@@ -11,7 +11,9 @@ describe('Recommendation Scoring Engine (Phase 11)', () => {
     droppedMediaIds: new Set(),
     completedMediaIds: new Set(['completed-1']),
     watchlistMediaIds: new Set(['watchlist-1']),
-    recentActivityMediaIds: new Set(['recent-1'])
+    recentActivityMediaIds: new Set(['recent-1']),
+    dismissedMediaIds: new Set(),
+    mutedGenreIds: new Set()
   };
 
   const createMockCandidate = (id: string, genreIds: string[], releaseYear?: number): MediaWithGenres => ({

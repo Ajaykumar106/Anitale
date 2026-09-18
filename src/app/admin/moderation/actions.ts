@@ -6,8 +6,7 @@ import { requireRole } from '@/lib/rbac';
 import { revalidatePath } from 'next/cache';
 
 export async function dismissReport(reportId: string) {
-  const session = await auth();
-  requireRole(session, 'MODERATOR');
+  await requireRole('MODERATOR');
 
   await prisma.report.update({
     where: { id: reportId },
@@ -18,8 +17,7 @@ export async function dismissReport(reportId: string) {
 }
 
 export async function resolveAndHideContent(reportId: string, targetType: string, targetId: string) {
-  const session = await auth();
-  requireRole(session, 'MODERATOR');
+  await requireRole('MODERATOR');
 
   if (targetType === 'REVIEW') {
     await prisma.review.delete({ where: { id: targetId } });
@@ -36,8 +34,7 @@ export async function resolveAndHideContent(reportId: string, targetType: string
 }
 
 export async function banUser(reportId: string, targetUserId: string) {
-  const session = await auth();
-  requireRole(session, 'ADMIN');
+  await requireRole('ADMIN');
 
   // Basic ban implementation: we would need a banned flag on the user
   // Or delete the user.

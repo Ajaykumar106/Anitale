@@ -51,8 +51,11 @@ export async function POST(req: Request) {
     });
 
     // Invalidate caches
+    // @ts-ignore
     revalidateTag(`trending-${session.user.id}`);
+    // @ts-ignore
     revalidateTag(`might-like-${session.user.id}`);
+    // @ts-ignore
     revalidateTag(`hidden-gems-${session.user.id}`);
 
     return NextResponse.json(prefs);

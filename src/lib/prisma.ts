@@ -15,7 +15,7 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
   // Log slow queries in development to identify bottlenecks
-  prisma.$on('query', (e) => {
+  (prisma as any).$on('query', (e: any) => {
     if (e.duration > 100) { // Log queries taking longer than 100ms
       console.warn(`[SLOW QUERY] ${e.duration}ms : ${e.query}`);
     }

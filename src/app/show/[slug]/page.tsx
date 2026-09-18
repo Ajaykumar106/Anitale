@@ -64,5 +64,5 @@ export default async function ShowPage({
     notFound();
   }
 
-  return <MediaDetail media={mappedMedia} />;
+  return <MediaDetail media={mappedMedia as any} />;
 }

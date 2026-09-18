@@ -13,13 +13,13 @@ export async function sendEmailNotification(
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      include: { notificationSettings: true }
+      include: { notificationPref: true }
     });
 
     if (!user || !user.email) return false;
 
     // Check if user opted out of email notifications
-    if (user.notificationSettings && !user.notificationSettings.emailNotifications) {
+    if (user.notificationPref && !user.notificationPref.emailNotifications) {
       console.log(`[Email] Skipped sending to ${user.email} (opted out)`);
       return false;
     }

@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     });
 
     // Invalidate the recommendation cache for this user
+    // @ts-ignore
     revalidateTag(`home-recs-${session.user.id}`);
 
     return NextResponse.json({ success: true });

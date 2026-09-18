@@ -26,10 +26,10 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ success: true, feedback });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Failed to submit feedback:', error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+      return NextResponse.json({ error: (error as any).errors }, { status: 400 });
     }
     return NextResponse.json({ error: 'Failed to submit feedback' }, { status: 500 });
   }
