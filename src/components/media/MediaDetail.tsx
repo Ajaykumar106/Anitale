@@ -13,6 +13,7 @@ import { MediaReviews } from '../community/MediaReviews';
 import { Suspense } from 'react';
 import { ShareButton } from './ShareButton';
 import { LiveDiscussion } from './LiveDiscussion';
+import { Star, Search } from 'lucide-react';
 
 interface MediaDetailProps {
   media: ProviderMediaDetails;
@@ -68,9 +69,20 @@ export function MediaDetail({ media }: MediaDetailProps) {
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-2">
               {media.title}
             </h1>
-            <p className="text-muted-foreground text-lg">
-              {year} • {media.runtime ? `${media.runtime} min` : 'Unknown runtime'}
-            </p>
+            <div className="flex items-center gap-4 text-muted-foreground text-lg mb-4">
+              <span>{year}</span>
+              <span>•</span>
+              <span>{media.runtime ? `${media.runtime} min` : 'Unknown runtime'}</span>
+              {media.voteAverage !== undefined && (
+                <>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 font-medium text-foreground">
+                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    {media.voteAverage.toFixed(1)}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -104,11 +116,44 @@ export function MediaDetail({ media }: MediaDetailProps) {
         </div>
       </div>
 
-      {/* Cast & Crew Placeholder */}
-      <section>
-        <SectionHeader title="Cast & Crew" />
-        <div className="text-muted-foreground italic">Cast data will appear here...</div>
-      </section>
+      {/* Cast & Crew Section */}
+      {media.credits && (media.credits.cast.length > 0 || media.credits.crew.length > 0) && (
+        <section className="space-y-4">
+          <SectionHeader title="Cast & Crew" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {media.credits.cast.map((person, idx) => (
+              <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-2">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                  {person.profilePath ? (
+                    <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">N/A</div>
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold text-sm leading-tight">{person.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{person.character}</div>
+                </div>
+              </div>
+            ))}
+            {media.credits.crew.map((person, idx) => (
+              <div key={`crew-${idx}`} className="flex flex-col items-center text-center space-y-2">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted flex-shrink-0">
+                  {person.profilePath ? (
+                    <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">N/A</div>
+                  )}
+                </div>
+                <div>
+                  <div className="font-semibold text-sm leading-tight">{person.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{person.job}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Availability Section */}
       <section>
@@ -126,7 +171,21 @@ export function MediaDetail({ media }: MediaDetailProps) {
             ))}
           </div>
         ) : (
-          <div className="text-muted-foreground italic">No availability data found.</div>
+          <div className="flex flex-col space-y-4">
+            <p className="text-muted-foreground italic">No official streaming platforms found. Search the web instead:</p>
+            <div className="flex flex-wrap gap-4">
+              <a href={`https://t.me/search?q=${encodeURIComponent(media.title + ' episodes')}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="gap-2 border-[#0088cc] text-[#0088cc] hover:bg-[#0088cc] hover:text-white">
+                  <Search className="w-4 h-4" /> Telegram Search
+                </Button>
+              </a>
+              <a href={`https://duckduckgo.com/?q=${encodeURIComponent(media.title + ' streaming links')}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="gap-2">
+                  <Search className="w-4 h-4" /> Web Search
+                </Button>
+              </a>
+            </div>
+          </div>
         )}
       </section>
 

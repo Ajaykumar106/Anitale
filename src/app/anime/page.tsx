@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getTrendingMedia } from '@/services/media/trending';
+import { getTrendingMedia, getDiscoverMedia } from '@/services/media/trending';
 import { MediaRow } from '@/components/media/MediaRow';
 import { MediaCard } from '@/components/media/MediaCard';
 import { SectionHeader } from '@/components/media/SectionHeader';
@@ -14,7 +14,10 @@ export const metadata: Metadata = {
 export const revalidate = 43200;
 
 export default async function AnimePage() {
-  const trending = await getTrendingMedia(MediaType.ANIME);
+  const [trending, topRated] = await Promise.all([
+    getTrendingMedia(MediaType.ANIME),
+    getDiscoverMedia(MediaType.ANIME, { top_rated: true }),
+  ]);
   
   if (!trending || trending.length === 0) {
     return (
@@ -25,20 +28,17 @@ export default async function AnimePage() {
     );
   }
 
-  const heroItem = trending[0];
-  const remainingTrending = trending.slice(1);
-
   return (
     <div className="container py-6 space-y-8">
       <Suspense fallback={<div className="w-full h-[60vh] sm:h-[70vh] lg:h-[80vh] bg-muted animate-pulse rounded-xl" />}>
-        <HeroBanner externalId={heroItem.externalId} type={MediaType.ANIME} />
+        <HeroBanner items={trending} type={MediaType.ANIME} />
       </Suspense>
 
       <section>
         <SectionHeader title="Trending Anime" />
         <MediaRow>
-          {remainingTrending.map((media) => (
-            <div key={`anime-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+          {trending.map((media) => (
+            <div key={`anime-trending-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
               <MediaCard
                 id={media.externalId}
                 title={media.title}
@@ -50,6 +50,25 @@ export default async function AnimePage() {
           ))}
         </MediaRow>
       </section>
+
+      {topRated && topRated.length > 0 && (
+        <section>
+          <SectionHeader title="Top Rated Anime" />
+          <MediaRow>
+            {topRated.map((media) => (
+              <div key={`anime-top-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+                <MediaCard
+                  id={media.externalId}
+                  title={media.title}
+                  type={media.type}
+                  posterPath={media.posterPath}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
+                />
+              </div>
+            ))}
+          </MediaRow>
+        </section>
+      )}
     </div>
   );
 }

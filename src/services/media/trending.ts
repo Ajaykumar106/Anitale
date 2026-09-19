@@ -16,3 +16,15 @@ export async function getTrendingMedia(type?: MediaType): Promise<ProviderMediaR
     return [];
   }
 }
+
+export async function getDiscoverMedia(type: MediaType, options: { genre?: string, sort_by?: string, top_rated?: boolean }): Promise<ProviderMediaResult[]> {
+  try {
+    const fetcher = async () => await tmdb.getDiscover(type, options);
+    const cacheKey = ['discover', type, options.genre || 'all', options.sort_by || 'none', options.top_rated ? 'top_rated' : 'none'].join('-');
+    const cachedFetcher = withCache(fetcher, [cacheKey], CACHE_TTL.METADATA);
+    return await cachedFetcher();
+  } catch (error) {
+    console.error('Failed to fetch discover media', error);
+    return [];
+  }
+}

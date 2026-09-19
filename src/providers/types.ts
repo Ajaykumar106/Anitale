@@ -18,6 +18,11 @@ export interface ProviderMediaDetails extends ProviderMediaResult {
   alternativeTitles: { title: string; language: string }[];
   availability?: ProviderAvailabilityData[];
   trailerUrl?: string;
+  credits?: {
+    cast: { name: string; character: string; profilePath: string | null }[];
+    crew: { name: string; job: string; profilePath: string | null }[];
+  };
+  voteAverage?: number;
 }
 
 export interface ProviderAvailabilityData {

@@ -60,10 +60,12 @@ export default async function AnimePage({
       releaseDate: media.releaseDate || undefined,
       status: media.status || undefined,
       runtime: media.runtime || undefined,
-      genres: media.genres.map(g => g.genre.name),
-      alternativeTitles: media.alternativeTitles.map(a => ({ title: a.title, language: a.language || '' })),
+      genres: (media as any).genres.map((g: any) => g.genre.name),
+      alternativeTitles: (media as any).alternativeTitles.map((a: any) => ({ title: a.title, language: a.language || '' })),
       availability: availability,
       trailerUrl: trailerUrl || undefined,
+      credits: (media as any).credits,
+      voteAverage: (media as any).voteAverage,
     };
   } catch (error) {
     console.error(error);

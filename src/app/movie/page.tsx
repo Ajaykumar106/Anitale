@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { getTrendingMedia } from '@/services/media/trending';
+import { getTrendingMedia, getDiscoverMedia } from '@/services/media/trending';
 import { MediaRow } from '@/components/media/MediaRow';
 import { MediaCard } from '@/components/media/MediaCard';
 import { SectionHeader } from '@/components/media/SectionHeader';
@@ -14,7 +14,12 @@ export const metadata: Metadata = {
 export const revalidate = 43200;
 
 export default async function MoviesPage() {
-  const trending = await getTrendingMedia(MediaType.MOVIE);
+  const [trending, topRated, action, comedy] = await Promise.all([
+    getTrendingMedia(MediaType.MOVIE),
+    getDiscoverMedia(MediaType.MOVIE, { top_rated: true }),
+    getDiscoverMedia(MediaType.MOVIE, { genre: '28' }), // Action
+    getDiscoverMedia(MediaType.MOVIE, { genre: '35' }), // Comedy
+  ]);
   
   if (!trending || trending.length === 0) {
     return (
@@ -25,20 +30,17 @@ export default async function MoviesPage() {
     );
   }
 
-  const heroItem = trending[0];
-  const remainingTrending = trending.slice(1);
-
   return (
     <div className="container py-6 space-y-8">
       <Suspense fallback={<div className="w-full h-[60vh] sm:h-[70vh] lg:h-[80vh] bg-muted animate-pulse rounded-xl" />}>
-        <HeroBanner externalId={heroItem.externalId} type={MediaType.MOVIE} />
+        <HeroBanner items={trending} type={MediaType.MOVIE} />
       </Suspense>
 
       <section>
         <SectionHeader title="Trending Movies" />
         <MediaRow>
-          {remainingTrending.map((media) => (
-            <div key={`movie-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+          {trending.map((media) => (
+            <div key={`movie-trending-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
               <MediaCard
                 id={media.externalId}
                 title={media.title}
@@ -50,6 +52,63 @@ export default async function MoviesPage() {
           ))}
         </MediaRow>
       </section>
+
+      {topRated && topRated.length > 0 && (
+        <section>
+          <SectionHeader title="Top Rated Movies" />
+          <MediaRow>
+            {topRated.map((media) => (
+              <div key={`movie-top-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+                <MediaCard
+                  id={media.externalId}
+                  title={media.title}
+                  type={media.type}
+                  posterPath={media.posterPath}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
+                />
+              </div>
+            ))}
+          </MediaRow>
+        </section>
+      )}
+
+      {action && action.length > 0 && (
+        <section>
+          <SectionHeader title="Action Movies" />
+          <MediaRow>
+            {action.map((media) => (
+              <div key={`movie-action-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+                <MediaCard
+                  id={media.externalId}
+                  title={media.title}
+                  type={media.type}
+                  posterPath={media.posterPath}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
+                />
+              </div>
+            ))}
+          </MediaRow>
+        </section>
+      )}
+
+      {comedy && comedy.length > 0 && (
+        <section>
+          <SectionHeader title="Comedy Movies" />
+          <MediaRow>
+            {comedy.map((media) => (
+              <div key={`movie-comedy-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+                <MediaCard
+                  id={media.externalId}
+                  title={media.title}
+                  type={media.type}
+                  posterPath={media.posterPath}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
+                />
+              </div>
+            ))}
+          </MediaRow>
+        </section>
+      )}
     </div>
   );
 }

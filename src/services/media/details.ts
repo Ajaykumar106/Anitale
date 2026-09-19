@@ -51,7 +51,7 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
     // Try to cache it, but don't fail if DB is offline
     try {
       await importMedia(providerData);
-      return await prisma.media.findUnique({
+      const dbMedia = await prisma.media.findUnique({
         where: { externalId_type: { externalId, type } },
         include: {
           genres: { include: { genre: true } },
@@ -62,6 +62,11 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
           availability: { include: { provider: true } },
         }
       });
+      return dbMedia ? {
+        ...dbMedia,
+        credits: providerData.credits,
+        voteAverage: providerData.voteAverage
+      } : providerData as any;
     } catch (importError) {
       // DB is down, just return the mapped provider data directly so the UI doesn't crash
       return {
@@ -83,7 +88,9 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
         seasons: [],
         availability: [],
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        credits: providerData.credits,
+        voteAverage: providerData.voteAverage
       };
     }
   } catch (error) {

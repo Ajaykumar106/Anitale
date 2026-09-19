@@ -123,10 +123,52 @@ export class TMDBAdapter implements MetadataProvider {
       }));
   }
 
+  async getDiscover(type: MediaType, options?: { genre?: string, sort_by?: string, top_rated?: boolean }): Promise<ProviderMediaResult[]> {
+    let endpoint = type === 'MOVIE' ? '/discover/movie' : '/discover/tv';
+    let extraQuery = '';
+    if (type === 'ANIME') {
+      endpoint = '/discover/tv?with_genres=16&with_original_language=ja';
+      if (options?.top_rated) {
+        options = { ...options, sort_by: 'vote_average.desc' };
+        extraQuery = '&vote_count.gte=200';
+      }
+    } else if (options?.top_rated) {
+      endpoint = type === 'MOVIE' ? '/movie/top_rated' : '/tv/top_rated';
+    } else {
+      endpoint += '?';
+    }
+
+    const params = new URLSearchParams();
+    if (options?.genre && type !== 'ANIME') {
+      params.append('with_genres', options.genre);
+    }
+    if (options?.sort_by) {
+      params.append('sort_by', options.sort_by);
+    }
+
+    const query = params.toString();
+    const finalEndpoint = query ? (endpoint.includes('?') ? `${endpoint}&${query}${extraQuery}` : `${endpoint}?${query}${extraQuery}`) : endpoint + extraQuery;
+
+    const response = await this.fetchWithRetry(finalEndpoint);
+    const data = await response.json();
+    const parsed = TMDBSearchResponseSchema.parse(data);
+
+    return parsed.results
+      .filter(item => item.media_type !== 'person')
+      .map(item => ({
+        externalId: item.id.toString(),
+        type: type,
+        title: (item.title || item.name) ?? 'Unknown Title',
+        originalTitle: item.original_title,
+        posterPath: item.poster_path ?? undefined,
+        releaseDate: (item.release_date || item.first_air_date) ? new Date(item.release_date || item.first_air_date!) : undefined,
+      }));
+  }
+
   async getMediaDetails(externalId: string, type: MediaType): Promise<ProviderMediaDetails | null> {
     try {
       const endpoint = type === 'MOVIE' ? `/movie/${externalId}` : `/tv/${externalId}`;
-      const response = await this.fetchWithRetry(`${endpoint}?append_to_response=videos`);
+      const response = await this.fetchWithRetry(`${endpoint}?append_to_response=videos,credits`);
       const data = await response.json();
 
       let trailerUrl = undefined;
@@ -136,6 +178,18 @@ export class TMDBAdapter implements MetadataProvider {
           trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
         }
       }
+
+      const cast = data.credits?.cast?.slice(0, 10).map((c: any) => ({
+        name: c.name,
+        character: c.character,
+        profilePath: c.profile_path,
+      })) || [];
+
+      const crew = data.credits?.crew?.filter((c: any) => c.job === 'Director' || c.job === 'Executive Producer' || c.job === 'Writer').slice(0, 5).map((c: any) => ({
+        name: c.name,
+        job: c.job,
+        profilePath: c.profile_path,
+      })) || [];
 
       return {
         externalId: data.id.toString(),
@@ -151,6 +205,8 @@ export class TMDBAdapter implements MetadataProvider {
         genres: (data.genres || []).map((g: { name: string }) => ({ genre: { name: g.name } })),
         alternativeTitles: [], // Left empty for simplicity unless appending /alternative_titles
         trailerUrl,
+        voteAverage: data.vote_average,
+        credits: { cast, crew },
       };
     } catch (error) {
       console.error(`Failed to fetch details for ${externalId}:`, error);
