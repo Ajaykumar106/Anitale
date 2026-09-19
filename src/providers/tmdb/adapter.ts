@@ -275,4 +275,27 @@ export class TMDBAdapter implements MetadataProvider {
       return [];
     }
   }
+
+  async getSimilar(externalId: string, type: MediaType): Promise<ProviderMediaResult[]> {
+    try {
+      const endpoint = type === 'MOVIE' ? `/movie/${externalId}/similar` : `/tv/${externalId}/similar`;
+      const response = await this.fetchWithRetry(endpoint);
+      const data = await response.json();
+      const parsed = TMDBSearchResponseSchema.parse(data);
+
+      return parsed.results
+        .filter(item => item.media_type !== 'person')
+        .map(item => ({
+          externalId: item.id.toString(),
+          type: type,
+          title: (item.title || item.name) ?? 'Unknown Title',
+          originalTitle: item.original_title,
+          posterPath: item.poster_path ?? undefined,
+          releaseDate: (item.release_date || item.first_air_date) ? new Date(item.release_date || item.first_air_date!) : undefined,
+        }));
+    } catch (error) {
+      console.error(`Failed to fetch similar for ${externalId}:`, error);
+      return [];
+    }
+  }
 }

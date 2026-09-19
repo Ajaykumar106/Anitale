@@ -2,8 +2,9 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Info, Play } from 'lucide-react';
+import { Info, Play, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MediaType } from '@prisma/client';
+
 export type CarouselItem = {
   externalId: string;
   type: MediaType;
@@ -49,6 +50,16 @@ export function HeroCarouselClient({ items }: { items: CarouselItem[] }) {
       });
       setCurrentIndex(index);
     }
+  };
+
+  const nextSlide = () => {
+    const newIndex = currentIndex === items.length - 1 ? 0 : currentIndex + 1;
+    scrollTo(newIndex);
+  };
+
+  const prevSlide = () => {
+    const newIndex = currentIndex === 0 ? items.length - 1 : currentIndex - 1;
+    scrollTo(newIndex);
   };
 
   return (
@@ -110,6 +121,30 @@ export function HeroCarouselClient({ items }: { items: CarouselItem[] }) {
         })}
       </div>
       
+      {/* Left Arrow */}
+      <div className="absolute top-1/2 left-4 md:left-8 z-20 -translate-y-1/2 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full bg-black/40 border-0 hover:bg-black/60 text-white w-12 h-12"
+          onClick={prevSlide}
+        >
+          <ChevronLeft className="w-8 h-8" />
+        </Button>
+      </div>
+
+      {/* Right Arrow */}
+      <div className="absolute top-1/2 right-4 md:right-8 z-20 -translate-y-1/2 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <Button
+          variant="outline"
+          size="icon"
+          className="rounded-full bg-black/40 border-0 hover:bg-black/60 text-white w-12 h-12"
+          onClick={nextSlide}
+        >
+          <ChevronRight className="w-8 h-8" />
+        </Button>
+      </div>
+
       <div className="absolute bottom-6 right-8 md:right-12 z-20 flex space-x-2.5">
         {items.map((_, idx) => (
           <button 

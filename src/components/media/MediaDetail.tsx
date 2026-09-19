@@ -14,6 +14,7 @@ import { Suspense } from 'react';
 import { ShareButton } from './ShareButton';
 import { LiveDiscussion } from './LiveDiscussion';
 import { Star, Search } from 'lucide-react';
+import { SimilarMedia } from './SimilarMedia';
 
 interface MediaDetailProps {
   media: ProviderMediaDetails;
@@ -73,24 +74,23 @@ export function MediaDetail({ media }: MediaDetailProps) {
               <span>{year}</span>
               <span>•</span>
               <span>{media.runtime ? `${media.runtime} min` : 'Unknown runtime'}</span>
-              {media.voteAverage !== undefined && (
-                <>
-                  <span>•</span>
-                  <span className="flex items-center gap-1 font-medium text-foreground">
-                    <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                    {media.voteAverage.toFixed(1)}
-                  </span>
-                </>
-              )}
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {media.genres.map((g: any) => {
-              const genreName = typeof g === 'string' ? g : g.genre?.name;
-              if (!genreName) return null;
-              return <Badge key={genreName} variant="secondary">{genreName}</Badge>;
-            })}
+          <div className="flex flex-wrap items-center gap-4">
+            {media.voteAverage !== undefined && (
+              <Badge variant="default" className="bg-yellow-500/20 text-yellow-600 hover:bg-yellow-500/30 border-yellow-500/50 text-lg font-bold px-4 py-2 flex items-center gap-2">
+                <Star className="w-6 h-6 fill-yellow-500 text-yellow-500" />
+                {media.voteAverage.toFixed(1)} / 10
+              </Badge>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {media.genres.map((g: any) => {
+                const genreName = typeof g === 'string' ? g : g.genre?.name;
+                if (!genreName) return null;
+                return <Badge key={genreName} variant="secondary">{genreName}</Badge>;
+              })}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -112,11 +112,11 @@ export function MediaDetail({ media }: MediaDetailProps) {
               text={`Check out ${media.title} on Anitale!`} 
               url={`/${media.type === 'MOVIE' ? 'movie' : media.type === 'SERIES' ? 'show' : 'anime'}/${media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${media.externalId}`} 
             />
-            <Button asChild variant="default" className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-              <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">
+            <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">
+              <Button variant="default" className="gap-2 bg-green-600 hover:bg-green-700 text-white">
                 Host Watch Party (Google Meet)
-              </a>
-            </Button>
+              </Button>
+            </a>
           </div>
         </div>
       </div>
@@ -233,6 +233,11 @@ export function MediaDetail({ media }: MediaDetailProps) {
           <div className="text-muted-foreground italic">Reviews are unavailable.</div>
         )}
       </section>
+
+      {/* Similar & Recommended */}
+      <Suspense fallback={<div className="animate-pulse h-48 bg-muted rounded-md" />}>
+        <SimilarMedia externalId={media.externalId} type={media.type as MediaType} />
+      </Suspense>
     </div>
     </div>
   );

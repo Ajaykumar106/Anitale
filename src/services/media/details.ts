@@ -123,3 +123,7 @@ export const getMediaTrailer = cache(async (externalId: string, type: MediaType)
     return null;
   }
 });
+
+export const getSimilarMedia = cache(async (externalId: string, type: MediaType) => {
+  return tmdb.getSimilar(externalId, type);
+});
