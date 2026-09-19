@@ -35,7 +35,7 @@ export async function TrendingSections() {
                   title={media.title}
                   type={media.type}
                   posterPath={media.posterPath}
-                  year={media.releaseDate?.getFullYear()}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
                 />
               </div>
             ))}
@@ -54,7 +54,7 @@ export async function TrendingSections() {
                   title={media.title}
                   type={media.type}
                   posterPath={media.posterPath}
-                  year={media.releaseDate?.getFullYear()}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
                 />
               </div>
             ))}
@@ -73,7 +73,7 @@ export async function TrendingSections() {
                   title={media.title}
                   type={media.type}
                   posterPath={media.posterPath}
-                  year={media.releaseDate?.getFullYear()}
+                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
                 />
               </div>
             ))}
