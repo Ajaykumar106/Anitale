@@ -105,6 +105,7 @@ export class TMDBAdapter implements MetadataProvider {
     let endpoint = '/trending/all/day';
     if (type === 'MOVIE') endpoint = '/trending/movie/day';
     else if (type === 'SERIES') endpoint = '/trending/tv/day';
+    else if (type === 'ANIME') endpoint = '/discover/tv?with_genres=16&with_original_language=ja&sort_by=popularity.desc';
 
     const response = await this.fetchWithRetry(endpoint);
     const data = await response.json();
@@ -114,7 +115,7 @@ export class TMDBAdapter implements MetadataProvider {
       .filter(item => item.media_type !== 'person')
       .map(item => ({
         externalId: item.id.toString(),
-        type: (item.media_type === 'tv' || type === 'SERIES') ? MediaType.SERIES : MediaType.MOVIE,
+        type: type || (item.media_type === 'tv' ? MediaType.SERIES : MediaType.MOVIE),
         title: (item.title || item.name) ?? 'Unknown Title',
         originalTitle: item.original_title,
         posterPath: item.poster_path ?? undefined,

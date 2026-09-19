@@ -21,7 +21,7 @@ export function MediaCard({ id, title, type, posterPath, year, rating, priority,
   const route = type === MediaType.MOVIE ? `/movie/${slug}-${id}` : type === MediaType.SERIES ? `/show/${slug}-${id}` : `/anime/${slug}-${id}`;
 
   return (
-    <Link href={route} className="group relative flex flex-col space-y-2 rounded-md transition-all hover:scale-105 active:scale-95">
+    <Link href={route} className="group relative flex flex-col space-y-2 rounded-md transition-transform duration-300 hover:scale-105 active:scale-95">
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md shadow-sm">
         <PosterImage
           src={posterPath}

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { getMediaDetails } from '@/services/media/details';
 import { MediaType } from '@prisma/client';
+import { LiveDiscussion } from '@/components/media/LiveDiscussion';
 
 export default async function WatchMoviePage({
   params
@@ -41,6 +42,8 @@ export default async function WatchMoviePage({
           <strong>Legal Disclaimer:</strong> Anitale strictly utilizes authorized metadata and embed providers. We do not download, proxy, disguise, bypass, or extract unauthorized copyrighted streams.
         </p>
       </div>
+
+      <LiveDiscussion />
     </div>
   );
 }

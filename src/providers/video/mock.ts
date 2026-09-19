@@ -1,4 +1,6 @@
 import { VideoProvider, PlaybackData } from './types';
+import { prisma } from '@/lib/prisma';
+import { MediaType } from '@prisma/client';
 
 export class MockVideoProvider implements VideoProvider {
   id = 'mock-provider';
@@ -8,8 +10,6 @@ export class MockVideoProvider implements VideoProvider {
     providerMediaId: string,
     providerEpisodeId?: string
   ): Promise<PlaybackData | null> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
 
     // Special case for error testing
     if (providerMediaId === 'error-test') {
@@ -20,9 +20,30 @@ export class MockVideoProvider implements VideoProvider {
       return null;
     }
 
+    let embedUrl: string | undefined = undefined;
+    let isEmbed = false;
+
+    try {
+      const media = await prisma.media.findUnique({ where: { id: providerMediaId } });
+      if (media && process.env.TMDB_API_KEY) {
+        const tmdbType = media.type === MediaType.MOVIE ? 'movie' : 'tv';
+        const res = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${media.externalId}/videos?api_key=${process.env.TMDB_API_KEY}`);
+        if (res.ok) {
+          const data = await res.json();
+          const trailer = data.results?.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube') || data.results?.find((v: any) => v.site === 'YouTube');
+          if (trailer) {
+            embedUrl = `https://www.youtube.com/embed/${trailer.key}?autoplay=1`;
+            isEmbed = true;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching trailer:', error);
+    }
+
     return {
-      isEmbed: true,
-      embedUrl: `https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1`, // Safe fallback embed for demo purposes
+      isEmbed,
+      embedUrl,
       sources: [
         {
           url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8',
