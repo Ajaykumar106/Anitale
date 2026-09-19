@@ -112,6 +112,11 @@ export function MediaDetail({ media }: MediaDetailProps) {
               text={`Check out ${media.title} on Anitale!`} 
               url={`/${media.type === 'MOVIE' ? 'movie' : media.type === 'SERIES' ? 'show' : 'anime'}/${media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${media.externalId}`} 
             />
+            <Button asChild variant="default" className="gap-2 bg-green-600 hover:bg-green-700 text-white">
+              <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">
+                Host Watch Party (Google Meet)
+              </a>
+            </Button>
           </div>
         </div>
       </div>

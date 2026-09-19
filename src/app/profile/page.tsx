@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { getProfile } from '@/services/user/profile';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { FriendsList } from '@/components/profile/FriendsList';
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -53,6 +54,8 @@ export default async function ProfilePage() {
             )}
           </div>
         </div>
+        
+        <FriendsList />
       </div>
     </div>
   );

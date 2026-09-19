@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 // NextAuth Models
@@ -59,6 +60,8 @@ model User {
   feedback             Feedback[]
   followers            Follow[]                @relation("following")
   following            Follow[]                @relation("follower")
+  friendships          Friendship[]            @relation("UserFriendships")
+  friendOf             Friendship[]            @relation("FriendUser")
   comments             Comment[]
   auditLogs            AuditLog[]
   likes                Like[]
@@ -701,4 +704,25 @@ model MediaDismissal {
 
   @@unique([userId, mediaId])
   @@index([userId])
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
+model Friendship {
+  id        String           @id @default(cuid())
+  userId    String
+  friendId  String
+  status    FriendshipStatus @default(PENDING)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user   User @relation("UserFriendships", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendUser", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
 }
