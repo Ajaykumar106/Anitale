@@ -14,33 +14,32 @@ export const metadata: Metadata = {
 export const revalidate = 43200;
 
 export default async function ShowsPage() {
-  const [trending, topRated, action, comedy] = await Promise.all([
+  const [trending, topRated, action, scifi, kdrama, comedy] = await Promise.all([
     getTrendingMedia(MediaType.SERIES),
     getDiscoverMedia(MediaType.SERIES, { top_rated: true }),
     getDiscoverMedia(MediaType.SERIES, { genre: '10759' }), // Action & Adventure
+    getDiscoverMedia(MediaType.SERIES, { genre: '10765' }), // Sci-Fi & Fantasy
+    getDiscoverMedia(MediaType.SERIES, { original_language: 'ko' }), // K-Dramas
     getDiscoverMedia(MediaType.SERIES, { genre: '35' }), // Comedy
   ]);
   
   if (!trending || trending.length === 0) {
     return (
-      <div className="container py-8">
+      <div className="w-full px-4 py-8">
         <h1 className="text-3xl font-bold">TV Shows</h1>
         <p className="text-muted-foreground mt-4">No TV shows available at the moment.</p>
       </div>
     );
   }
 
-  return (
-    <div className="container py-6 space-y-8">
-      <Suspense fallback={<div className="w-full h-[60vh] sm:h-[70vh] lg:h-[80vh] bg-muted animate-pulse rounded-xl" />}>
-        <HeroBanner items={trending} type={MediaType.SERIES} />
-      </Suspense>
-
+  const renderRow = (title: string, data: any[]) => {
+    if (!data || data.length === 0) return null;
+    return (
       <section>
-        <SectionHeader title="Trending Series" />
+        <SectionHeader title={title} />
         <MediaRow>
-          {trending.map((media) => (
-            <div key={`series-trending-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+          {data.map((media) => (
+            <div key={`${title}-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
               <MediaCard
                 id={media.externalId}
                 title={media.title}
@@ -52,63 +51,23 @@ export default async function ShowsPage() {
           ))}
         </MediaRow>
       </section>
+    );
+  };
 
-      {topRated && topRated.length > 0 && (
-        <section>
-          <SectionHeader title="Top Rated Series" />
-          <MediaRow>
-            {topRated.map((media) => (
-              <div key={`series-top-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
-                <MediaCard
-                  id={media.externalId}
-                  title={media.title}
-                  type={media.type}
-                  posterPath={media.posterPath}
-                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
-                />
-              </div>
-            ))}
-          </MediaRow>
-        </section>
-      )}
+  return (
+    <div className="w-full pb-8 space-y-8 md:space-y-12">
+      <Suspense fallback={<div className="w-full h-[75vh] md:h-[85vh] bg-muted animate-pulse" />}>
+        <HeroBanner items={trending} type={MediaType.SERIES} />
+      </Suspense>
 
-      {action && action.length > 0 && (
-        <section>
-          <SectionHeader title="Action & Adventure" />
-          <MediaRow>
-            {action.map((media) => (
-              <div key={`series-action-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
-                <MediaCard
-                  id={media.externalId}
-                  title={media.title}
-                  type={media.type}
-                  posterPath={media.posterPath}
-                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
-                />
-              </div>
-            ))}
-          </MediaRow>
-        </section>
-      )}
-
-      {comedy && comedy.length > 0 && (
-        <section>
-          <SectionHeader title="Comedy Series" />
-          <MediaRow>
-            {comedy.map((media) => (
-              <div key={`series-comedy-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
-                <MediaCard
-                  id={media.externalId}
-                  title={media.title}
-                  type={media.type}
-                  posterPath={media.posterPath}
-                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
-                />
-              </div>
-            ))}
-          </MediaRow>
-        </section>
-      )}
+      <div className="space-y-6 md:space-y-10">
+        {renderRow("Trending Series", trending)}
+        {renderRow("Top Rated", topRated)}
+        {renderRow("Action & Adventure", action)}
+        {renderRow("Sci-Fi & Fantasy", scifi)}
+        {renderRow("K-Dramas", kdrama)}
+        {renderRow("Comedies", comedy)}
+      </div>
     </div>
   );
 }

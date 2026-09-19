@@ -2,7 +2,7 @@ import { MediaType } from '@prisma/client';
 import { getMediaDetails } from '@/services/media/details';
 import { HeroCarouselClient } from './HeroCarouselClient';
 
-export async function HeroBanner({ items, type }: { items: { externalId: string, type: string }[], type: MediaType }) {
+export async function HeroBanner({ items, type }: { items: { externalId: string, type: string }[], type?: MediaType }) {
   const topItems = items.slice(0, 5);
   const detailsList = await Promise.all(
     topItems.map(item => getMediaDetails(item.externalId, item.type as MediaType))

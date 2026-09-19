@@ -4,6 +4,11 @@ import { PersonalizedHomeFeeds } from '@/components/recommendations/Personalized
 import { TrendingSections } from '@/components/home/TrendingSections';
 import { MediaRowSkeleton } from '@/components/media/MediaRowSkeleton';
 import { SectionHeader } from '@/components/media/SectionHeader';
+import { getTrendingMedia, getDiscoverMedia } from '@/services/media/trending';
+import { HeroBanner } from '@/components/media/HeroBanner';
+import { MediaType } from '@prisma/client';
+import { MediaRow } from '@/components/media/MediaRow';
+import { MediaCard } from '@/components/media/MediaCard';
 
 export const metadata: Metadata = {
   title: 'Anitale - Discover Entertainment',
@@ -11,34 +16,60 @@ export const metadata: Metadata = {
 
 export const revalidate = 43200; 
 
-export default function Home() {
-  return (
-    <div className="container py-8 space-y-8">
-      <section className="space-y-4">
-        <div className="rounded-xl bg-primary/10 p-8 md:p-12 text-center flex flex-col items-center">
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-primary">Welcome to Anitale</h1>
-          <p className="mt-4 text-muted-foreground max-w-xl text-lg">
-            Discover, track, and review your favorite movies, series, and anime all in one place.
-          </p>
-        </div>
+export default async function Home() {
+  const trendingAll = await getTrendingMedia();
+  const top10 = await getDiscoverMedia(MediaType.MOVIE, { top_rated: true });
+
+  const renderRow = (title: string, data: any[]) => {
+    if (!data || data.length === 0) return null;
+    return (
+      <section>
+        <SectionHeader title={title} />
+        <MediaRow>
+          {data.map((media) => (
+            <div key={`${title}-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+              <MediaCard
+                id={media.externalId}
+                title={media.title}
+                type={media.type}
+                posterPath={media.posterPath}
+                year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
+              />
+            </div>
+          ))}
+        </MediaRow>
       </section>
+    );
+  };
 
-      <PersonalizedHomeFeeds />
-
-      <Suspense fallback={
-        <div className="space-y-8">
-          <section>
-            <SectionHeader title="Trending Now" />
-            <MediaRowSkeleton />
-          </section>
-          <section>
-            <SectionHeader title="Popular Movies" />
-            <MediaRowSkeleton />
-          </section>
-        </div>
-      }>
-        <TrendingSections />
+  return (
+    <div className="w-full pb-8 space-y-6 md:space-y-10">
+      <Suspense fallback={<div className="w-full h-[75vh] md:h-[85vh] bg-muted animate-pulse" />}>
+        {trendingAll && trendingAll.length > 0 && (
+          <HeroBanner items={trendingAll} />
+        )}
       </Suspense>
+
+      <div className="space-y-6 md:space-y-10">
+        <PersonalizedHomeFeeds />
+
+        <Suspense fallback={
+          <div className="space-y-6 md:space-y-10">
+            <section>
+              <SectionHeader title="Trending Now" />
+              <MediaRowSkeleton />
+            </section>
+            <section>
+              <SectionHeader title="Popular Movies" />
+              <MediaRowSkeleton />
+            </section>
+          </div>
+        }>
+          <TrendingSections />
+        </Suspense>
+        
+        {renderRow("Top 10 Today", top10)}
+      </div>
     </div>
   );
 }

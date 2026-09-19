@@ -123,7 +123,7 @@ export class TMDBAdapter implements MetadataProvider {
       }));
   }
 
-  async getDiscover(type: MediaType, options?: { genre?: string, sort_by?: string, top_rated?: boolean }): Promise<ProviderMediaResult[]> {
+  async getDiscover(type: MediaType, options?: { genre?: string, sort_by?: string, top_rated?: boolean, upcoming?: boolean, now_playing?: boolean, original_language?: string, airing_today?: boolean, on_the_air?: boolean }): Promise<ProviderMediaResult[]> {
     let endpoint = type === 'MOVIE' ? '/discover/movie' : '/discover/tv';
     let extraQuery = '';
     if (type === 'ANIME') {
@@ -131,9 +131,23 @@ export class TMDBAdapter implements MetadataProvider {
       if (options?.top_rated) {
         options = { ...options, sort_by: 'vote_average.desc' };
         extraQuery = '&vote_count.gte=200';
+      } else if (options?.airing_today) {
+        endpoint = '/tv/airing_today';
+        extraQuery = '&with_genres=16&with_original_language=ja';
+      } else if (options?.on_the_air) {
+        endpoint = '/tv/on_the_air';
+        extraQuery = '&with_genres=16&with_original_language=ja';
       }
     } else if (options?.top_rated) {
       endpoint = type === 'MOVIE' ? '/movie/top_rated' : '/tv/top_rated';
+    } else if (options?.upcoming && type === 'MOVIE') {
+      endpoint = '/movie/upcoming';
+    } else if (options?.now_playing && type === 'MOVIE') {
+      endpoint = '/movie/now_playing';
+    } else if (options?.airing_today && type === 'SERIES') {
+      endpoint = '/tv/airing_today';
+    } else if (options?.on_the_air && type === 'SERIES') {
+      endpoint = '/tv/on_the_air';
     } else {
       endpoint += '?';
     }
@@ -144,6 +158,9 @@ export class TMDBAdapter implements MetadataProvider {
     }
     if (options?.sort_by) {
       params.append('sort_by', options.sort_by);
+    }
+    if (options?.original_language && type !== 'ANIME') {
+      params.append('with_original_language', options.original_language);
     }
 
     const query = params.toString();

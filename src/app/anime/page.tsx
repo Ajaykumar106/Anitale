@@ -14,31 +14,30 @@ export const metadata: Metadata = {
 export const revalidate = 43200;
 
 export default async function AnimePage() {
-  const [trending, topRated] = await Promise.all([
+  const [trending, topRated, airingToday, onTheAir] = await Promise.all([
     getTrendingMedia(MediaType.ANIME),
     getDiscoverMedia(MediaType.ANIME, { top_rated: true }),
+    getDiscoverMedia(MediaType.ANIME, { airing_today: true }),
+    getDiscoverMedia(MediaType.ANIME, { on_the_air: true }),
   ]);
   
   if (!trending || trending.length === 0) {
     return (
-      <div className="container py-8">
+      <div className="w-full px-4 py-8">
         <h1 className="text-3xl font-bold">Anime</h1>
         <p className="text-muted-foreground mt-4">No anime available at the moment.</p>
       </div>
     );
   }
 
-  return (
-    <div className="container py-6 space-y-8">
-      <Suspense fallback={<div className="w-full h-[60vh] sm:h-[70vh] lg:h-[80vh] bg-muted animate-pulse rounded-xl" />}>
-        <HeroBanner items={trending} type={MediaType.ANIME} />
-      </Suspense>
-
+  const renderRow = (title: string, data: any[]) => {
+    if (!data || data.length === 0) return null;
+    return (
       <section>
-        <SectionHeader title="Trending Anime" />
+        <SectionHeader title={title} />
         <MediaRow>
-          {trending.map((media) => (
-            <div key={`anime-trending-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+          {data.map((media) => (
+            <div key={`${title}-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
               <MediaCard
                 id={media.externalId}
                 title={media.title}
@@ -50,25 +49,21 @@ export default async function AnimePage() {
           ))}
         </MediaRow>
       </section>
+    );
+  };
 
-      {topRated && topRated.length > 0 && (
-        <section>
-          <SectionHeader title="Top Rated Anime" />
-          <MediaRow>
-            {topRated.map((media) => (
-              <div key={`anime-top-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
-                <MediaCard
-                  id={media.externalId}
-                  title={media.title}
-                  type={media.type}
-                  posterPath={media.posterPath}
-                  year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
-                />
-              </div>
-            ))}
-          </MediaRow>
-        </section>
-      )}
+  return (
+    <div className="w-full pb-8 space-y-8 md:space-y-12">
+      <Suspense fallback={<div className="w-full h-[75vh] md:h-[85vh] bg-muted animate-pulse" />}>
+        <HeroBanner items={airingToday && airingToday.length > 0 ? airingToday : trending} type={MediaType.ANIME} />
+      </Suspense>
+
+      <div className="space-y-6 md:space-y-10">
+        {renderRow("Trending Anime", trending)}
+        {renderRow("Airing Today (Simulcasts)", airingToday)}
+        {renderRow("Currently Airing", onTheAir)}
+        {renderRow("Top Rated Anime", topRated)}
+      </div>
     </div>
   );
 }
