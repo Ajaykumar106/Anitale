@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
+import { Footer } from "@/components/layout/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -67,6 +68,7 @@ export default function RootLayout({
         <div className="relative flex min-h-screen flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
           <Navbar />
           <main className="flex-1">{children}</main>
+          <Footer />
           <MobileBottomNav />
         </div>
         <script

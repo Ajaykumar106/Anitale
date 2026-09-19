@@ -48,8 +48,8 @@ export async function sendNewEpisodeEmail(userId: string, showTitle: string, epi
       <h2 style="color: #6366f1;">New Episode Available!</h2>
       <p>A new episode of <strong>${showTitle}</strong> is now available.</p>
       <p>Episode ${episodeNumber} has just been released.</p>
-      <a href="https://anitale.app/watch" style="display: inline-block; padding: 10px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">
-        Watch Now
+      <a href="https://anitale.app/" style="display: inline-block; padding: 10px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 5px; margin-top: 15px;">
+        View Details
       </a>
       <hr style="margin-top: 30px; border: none; border-top: 1px solid #eee;" />
       <p style="font-size: 12px; color: #888;">

@@ -126,8 +126,16 @@ export class TMDBAdapter implements MetadataProvider {
   async getMediaDetails(externalId: string, type: MediaType): Promise<ProviderMediaDetails | null> {
     try {
       const endpoint = type === 'MOVIE' ? `/movie/${externalId}` : `/tv/${externalId}`;
-      const response = await this.fetchWithRetry(endpoint);
+      const response = await this.fetchWithRetry(`${endpoint}?append_to_response=videos`);
       const data = await response.json();
+
+      let trailerUrl = undefined;
+      if (data.videos && data.videos.results) {
+        const trailer = data.videos.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube') || data.videos.results.find((v: any) => v.site === 'YouTube');
+        if (trailer) {
+          trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
+        }
+      }
 
       return {
         externalId: data.id.toString(),
@@ -142,6 +150,7 @@ export class TMDBAdapter implements MetadataProvider {
         runtime: data.runtime || (data.episode_run_time?.[0]),
         genres: (data.genres || []).map((g: { name: string }) => ({ genre: { name: g.name } })),
         alternativeTitles: [], // Left empty for simplicity unless appending /alternative_titles
+        trailerUrl,
       };
     } catch (error) {
       console.error(`Failed to fetch details for ${externalId}:`, error);
@@ -149,7 +158,48 @@ export class TMDBAdapter implements MetadataProvider {
     }
   }
 
-  async getAvailability(externalId: string, type: MediaType, region: string): Promise<ProviderAvailabilityData[]> {
-    return [];
+  async getAvailability(externalId: string, type: MediaType, region: string = 'US'): Promise<ProviderAvailabilityData[]> {
+    try {
+      const endpoint = type === 'MOVIE' ? `/movie/${externalId}/watch/providers` : `/tv/${externalId}/watch/providers`;
+      const response = await this.fetchWithRetry(endpoint);
+      const data = await response.json();
+
+      const regionData = data.results?.[region];
+      if (!regionData) return [];
+
+      const availability: ProviderAvailabilityData[] = [];
+
+      const processProviders = (providers: any[] | undefined, providerType: 'STREAM' | 'RENT' | 'BUY' | 'FREE') => {
+        if (!providers) return;
+        providers.forEach(p => {
+          availability.push({
+            providerExternalId: p.provider_id.toString(),
+            providerName: p.provider_name,
+            logoPath: p.logo_path,
+            type: providerType,
+            region: region,
+          });
+        });
+      };
+
+      processProviders(regionData.flatrate, 'STREAM');
+      processProviders(regionData.rent, 'RENT');
+      processProviders(regionData.buy, 'BUY');
+      processProviders(regionData.free, 'FREE');
+
+      // Deduplicate providers of the same type? The current spec doesn't require it, 
+      // but TMDB might return duplicates in some edge cases. We'll leave it simple.
+      // Alternatively, just return availability as is.
+      
+      // We can unique by providerExternalId + type
+      const uniqueAvailability = availability.filter((v, i, a) => 
+        a.findIndex(t => t.providerExternalId === v.providerExternalId && t.type === v.type) === i
+      );
+
+      return uniqueAvailability;
+    } catch (error) {
+      console.error(`Failed to fetch availability for ${externalId}:`, error);
+      return [];
+    }
   }
 }

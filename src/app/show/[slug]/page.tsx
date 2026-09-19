@@ -44,6 +44,10 @@ export default async function ShowPage({
     const media = await getMediaDetails(id, MediaType.SERIES);
     if (!media) notFound();
 
+    const { getMediaAvailability, getMediaTrailer } = await import('@/services/media/details');
+    const availability = await getMediaAvailability(media.externalId, MediaType.SERIES);
+    const trailerUrl = await getMediaTrailer(media.externalId, MediaType.SERIES);
+
     mappedMedia = {
       id: (media as any).id,
       externalId: media.externalId,
@@ -58,6 +62,8 @@ export default async function ShowPage({
       runtime: media.runtime || undefined,
       genres: media.genres.map(g => g.genre.name),
       alternativeTitles: media.alternativeTitles.map(a => ({ title: a.title, language: a.language || '' })),
+      availability: availability,
+      trailerUrl: trailerUrl || undefined,
     };
   } catch (error) {
     console.error(error);

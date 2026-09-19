@@ -16,11 +16,14 @@ export interface ProviderMediaDetails extends ProviderMediaResult {
   runtime?: number;
   genres: string[];
   alternativeTitles: { title: string; language: string }[];
+  availability?: ProviderAvailabilityData[];
+  trailerUrl?: string;
 }
 
 export interface ProviderAvailabilityData {
   providerExternalId: string;
   providerName: string;
+  logoPath?: string;
   type: 'STREAM' | 'RENT' | 'BUY' | 'FREE';
   region: string;
 }

@@ -12,6 +12,7 @@ import { MediaRow } from './MediaRow';
 import { MediaReviews } from '../community/MediaReviews';
 import { Suspense } from 'react';
 import { ShareButton } from './ShareButton';
+import { LiveDiscussion } from './LiveDiscussion';
 
 interface MediaDetailProps {
   media: ProviderMediaDetails;
@@ -88,9 +89,6 @@ export function MediaDetail({ media }: MediaDetailProps) {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <Link href={`/watch/${media.externalId}`}>
-              <Button size="lg">Watch Now</Button>
-            </Link>
             <WatchlistButton externalId={media.externalId} type={media.type as MediaType} />
             {/* Only render if we have a valid internal DB id, since FollowReleaseButton requires it */}
             {(media as any).id && (
@@ -112,10 +110,45 @@ export function MediaDetail({ media }: MediaDetailProps) {
         <div className="text-muted-foreground italic">Cast data will appear here...</div>
       </section>
 
-      {/* Availability Placeholder */}
+      {/* Availability Section */}
       <section>
         <SectionHeader title="Where to Watch" />
-        <div className="text-muted-foreground italic">Provider data will appear here...</div>
+        {media.availability && media.availability.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {media.availability.map((provider: any, idx: number) => (
+              <div key={`${provider.providerExternalId}-${idx}`} className="flex items-center space-x-3 p-3 bg-card border rounded-md shadow-sm">
+                {provider.logoPath && (
+                  <img src={`https://image.tmdb.org/t/p/w45${provider.logoPath}`} alt={provider.providerName} className="w-8 h-8 rounded-md" />
+                )}
+                <div className="flex-1 font-semibold text-sm">{provider.providerName}</div>
+                <Badge variant="outline" className="shrink-0">{provider.type}</Badge>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-muted-foreground italic">No availability data found.</div>
+        )}
+      </section>
+
+      {/* Trailer */}
+      {media.trailerUrl && (
+        <section>
+          <SectionHeader title="Trailer" />
+          <div className="w-full max-w-4xl mx-auto aspect-video">
+            <iframe
+              src={media.trailerUrl}
+              className="w-full h-full border-0 rounded-lg shadow-lg ring-1 ring-white/10"
+              allowFullScreen
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Live Discussion */}
+      <section>
+        <SectionHeader title="Live Discussion" />
+        <LiveDiscussion />
       </section>
 
       {/* Reviews Section */}

@@ -92,3 +92,27 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
     throw new Error('Media not found');
   }
 });
+  
+export const getMediaAvailability = cache(async (externalId: string, type: MediaType, region: string = 'US') => {
+  return tmdb.getAvailability(externalId, type, region);
+});
+
+export const getMediaTrailer = cache(async (externalId: string, type: MediaType) => {
+  try {
+    const endpoint = type === 'MOVIE' ? `/movie/${externalId}` : `/tv/${externalId}`;
+    const response = await fetch(`https://api.themoviedb.org/3${endpoint}?api_key=${process.env.TMDB_API_KEY || 'dummy_key'}&append_to_response=videos`, {
+      next: { revalidate: 86400 }
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.videos && data.videos.results) {
+      const trailer = data.videos.results.find((v: any) => v.type === 'Trailer' && v.site === 'YouTube') || data.videos.results.find((v: any) => v.site === 'YouTube');
+      if (trailer) {
+        return `https://www.youtube.com/embed/${trailer.key}`;
+      }
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
+});

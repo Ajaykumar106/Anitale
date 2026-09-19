@@ -106,8 +106,8 @@ export default async function ReleasesPage() {
 
                     <div className="pt-2 border-t flex items-center justify-between">
                       <FollowReleaseButton mediaId={rel.media.id} />
-                      <Link href={`/watch/${rel.media.id}`}>
-                        <Button size="sm" variant="default">Watch</Button>
+                      <Link href={`/${rel.media.type.toLowerCase()}/${rel.media.id}`}>
+                        <Button size="sm" variant="default">Details</Button>
                       </Link>
                     </div>
                   </div>
