@@ -7,9 +7,11 @@ import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
   tmdbId: string;
+  mediaId?: string;
   type: 'MOVIE' | 'SERIES' | 'ANIME';
   season?: number;
   episode?: number;
+  onNextEpisode?: () => void;
 }
 
 const SERVERS = [
@@ -19,7 +21,7 @@ const SERVERS = [
   { id: '2embed', name: 'Server 4 (Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://www.2embed.cc/embed/${type === 'movie' ? id : `tv/${id}&s=${s}&e=${e}`}` }
 ];
 
-export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlayerProps) {
+export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onNextEpisode }: VideoPlayerProps) {
   const [activeServer, setActiveServer] = useState(SERVERS[0]);
   const [isLoading, setIsLoading] = useState(true);
   const mediaType = type === 'SERIES' || type === 'ANIME' ? 'tv' : 'movie';
@@ -29,16 +31,37 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
     setIsLoading(true);
   }, [activeServer, tmdbId, season, episode]);
 
+  // Log progress on mount/change
+  React.useEffect(() => {
+    if (mediaId) {
+      fetch('/api/user/progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mediaId, seasonNumber: season, episodeNumber: episode })
+      }).catch(console.error);
+    }
+  }, [mediaId, season, episode]);
+
   // Read preferred language from localStorage on mount
   React.useEffect(() => {
     try {
       const prefLang = localStorage.getItem('preferredLanguage');
       if (prefLang === 'Hindi') {
-        // Auto-select Server 2 (Hindi/Multi-Audio)
         setActiveServer(SERVERS[1]);
       }
     } catch (e) {}
   }, []);
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.shiftKey && e.key.toLowerCase() === 'n' && onNextEpisode) {
+        onNextEpisode();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNextEpisode]);
 
   if (mediaType === 'tv' && (!season || !episode)) {
     return (
@@ -103,6 +126,14 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
           title="Video Player"
           onLoad={() => setIsLoading(false)}
         />
+        {onNextEpisode && (
+          <Button 
+            onClick={onNextEpisode}
+            className="absolute bottom-4 right-4 z-30 bg-primary hover:bg-primary/90 text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          >
+            Next Episode (Shift + N)
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -20,6 +20,7 @@ export async function Navbar() {
             <Link href="/movie" className="transition-colors hover:text-foreground/80 text-foreground/60">Movies</Link>
             <Link href="/show" className="transition-colors hover:text-foreground/80 text-foreground/60">Series</Link>
             <Link href="/anime" className="transition-colors hover:text-foreground/80 text-foreground/60">Anime</Link>
+            <Link href="/community" className="transition-colors hover:text-foreground/80 text-foreground/60">Community</Link>
             <Link href="/news" className="transition-colors hover:text-foreground/80 text-foreground/60">News</Link>
           </nav>
         </div>

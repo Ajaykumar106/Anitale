@@ -16,11 +16,12 @@ interface Season {
 
 interface EpisodeSelectorProps {
   tmdbId: string;
+  mediaId?: string;
   type: 'MOVIE' | 'SERIES' | 'ANIME';
   seasons: Season[];
 }
 
-export function EpisodeSelector({ tmdbId, type, seasons }: EpisodeSelectorProps) {
+export function EpisodeSelector({ tmdbId, mediaId, type, seasons }: EpisodeSelectorProps) {
   const [selectedSeason, setSelectedSeason] = useState<number>(seasons.length > 0 ? seasons[0].seasonNumber : 1);
   const [episodes, setEpisodes] = useState<ProviderEpisodeDetails[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,14 +50,32 @@ export function EpisodeSelector({ tmdbId, type, seasons }: EpisodeSelectorProps)
     fetchEpisodes();
   }, [tmdbId, selectedSeason]);
 
+  const handleNextEpisode = () => {
+    if (!selectedEpisode || episodes.length === 0) return;
+    
+    const currentIndex = episodes.findIndex(e => e.episodeNumber === selectedEpisode.episodeNumber);
+    if (currentIndex < episodes.length - 1) {
+      // Next episode in current season
+      setSelectedEpisode(episodes[currentIndex + 1]);
+    } else {
+      // Try next season
+      const currentSeasonIndex = seasons.findIndex(s => s.seasonNumber === selectedSeason);
+      if (currentSeasonIndex !== -1 && currentSeasonIndex < seasons.length - 1) {
+        setSelectedSeason(seasons[currentSeasonIndex + 1].seasonNumber);
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Dynamic Video Player that updates based on selection */}
       <VideoPlayerWrapper 
         tmdbId={tmdbId} 
+        mediaId={mediaId}
         type={type} 
         season={selectedSeason} 
         episode={selectedEpisode?.episodeNumber} 
+        onNextEpisode={handleNextEpisode}
       />
 
       {/* Season Selector Dropdown */}

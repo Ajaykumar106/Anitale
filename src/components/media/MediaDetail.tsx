@@ -60,9 +60,9 @@ export function MediaDetail({ media }: MediaDetailProps) {
 
       {/* Video Player & Episode Selector */}
       {media.type !== 'MOVIE' && media.seasons && media.seasons.length > 0 ? (
-        <EpisodeSelector tmdbId={media.externalId} type={media.type as 'SERIES' | 'ANIME'} seasons={media.seasons} />
+        <EpisodeSelector mediaId={(media as any).id} tmdbId={media.externalId} type={media.type as 'SERIES' | 'ANIME'} seasons={media.seasons} />
       ) : (
-        <VideoPlayerWrapper tmdbId={media.externalId} type={media.type as 'MOVIE' | 'SERIES' | 'ANIME'} />
+        <VideoPlayerWrapper mediaId={(media as any).id} tmdbId={media.externalId} type={media.type as 'MOVIE' | 'SERIES' | 'ANIME'} />
       )}
 
       {/* Hero Section */}

@@ -19,7 +19,7 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/notifications?unread=false')
+    fetch('/api/user/notifications')
       .then(res => res.json())
       .then(data => {
         if (data && data.notifications) {
@@ -31,7 +31,7 @@ export function NotificationBell() {
   }, []);
 
   const markAllRead = async () => {
-    await fetch('/api/notifications', { method: 'PUT' });
+    await fetch('/api/user/notifications', { method: 'PATCH' });
     setUnreadCount(0);
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
   };

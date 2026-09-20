@@ -4,6 +4,7 @@ import { PersonalizedHomeFeeds } from '@/components/recommendations/Personalized
 import { TrendingSections } from '@/components/home/TrendingSections';
 import { MediaRowSkeleton } from '@/components/media/MediaRowSkeleton';
 import { SectionHeader } from '@/components/media/SectionHeader';
+import { ContinueWatchingRow } from '@/components/media/ContinueWatchingRow';
 import { getTrendingMedia, getDiscoverMedia } from '@/services/media/trending';
 import { HeroBanner } from '@/components/media/HeroBanner';
 import { MediaType } from '@prisma/client';
@@ -59,6 +60,10 @@ export default async function Home() {
       </Suspense>
 
       <div className="space-y-6 md:space-y-10">
+        <Suspense fallback={<MediaRowSkeleton />}>
+          <ContinueWatchingRow />
+        </Suspense>
+        
         {renderRow("Latest Releases & Updates", latestUpdates, "/releases")}
         <PersonalizedHomeFeeds />
 

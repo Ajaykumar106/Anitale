@@ -14,14 +14,15 @@ export interface MediaCardProps {
   priority?: boolean;
   showDismiss?: boolean;
   internalId?: string; // used for dismissal since we need Prisma ID, not TMDB ID
+  className?: string;
 }
 
-export function MediaCard({ id, title, type, posterPath, year, rating, priority, showDismiss, internalId }: MediaCardProps) {
+export function MediaCard({ id, title, type, posterPath, year, rating, priority, showDismiss, internalId, className }: MediaCardProps) {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const route = type === MediaType.MOVIE ? `/movie/${slug}-${id}` : type === MediaType.SERIES ? `/show/${slug}-${id}` : `/anime/${slug}-${id}`;
 
   return (
-    <Link href={route} className="group relative flex flex-col space-y-2 rounded-md transition-transform duration-300 hover:scale-105 active:scale-95">
+    <Link href={route} className={`group relative flex flex-col space-y-2 rounded-md transition-transform duration-300 hover:scale-105 active:scale-95 ${className || ''}`}>
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-md shadow-sm">
         <PosterImage
           src={posterPath}

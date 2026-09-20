@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { Footer } from "@/components/layout/Footer";
+import { AIChatWidget } from "@/components/layout/AIChatWidget";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -73,6 +74,7 @@ export default function RootLayout({
             <main className="flex-1">{children}</main>
             <Footer />
             <BottomNav />
+            <AIChatWidget />
           </div>
         </SessionProviderWrapper>
         <script
