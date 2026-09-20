@@ -1,5 +1,5 @@
 import { MediaType } from '@prisma/client';
-import { getMediaDetails } from '@/services/media/details';
+import { getMediaDetails, getMediaAvailability } from '@/services/media/details';
 import { MediaDetail } from '@/components/media/MediaDetail';
 import { notFound } from 'next/navigation';
 
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     return generateSEOMetadata({
       title: `Watch ${media.title} Online - Anitale`,
-      description: media.overview || '',
+      description: media.overview || `Watch ${media.title} on Anitale.`,
       url: `/anime/${resolvedParams.slug}`,
       image: media.posterPath ? `https://image.tmdb.org/t/p/w1280${media.backdropPath || media.posterPath}` : undefined,
       type: 'video.tv_show'
@@ -44,9 +44,7 @@ export default async function AnimePage({
     const media = await getMediaDetails(id, MediaType.ANIME);
     if (!media) notFound();
 
-    const { getMediaAvailability, getMediaTrailer } = await import('@/services/media/details');
     const availability = await getMediaAvailability(media.externalId, MediaType.ANIME);
-    const trailerUrl = await getMediaTrailer(media.externalId, MediaType.ANIME);
 
     mappedMedia = {
       id: (media as any).id,
@@ -63,7 +61,7 @@ export default async function AnimePage({
       genres: (media as any).genres.map((g: any) => g.genre.name),
       alternativeTitles: (media as any).alternativeTitles.map((a: any) => ({ title: a.title, language: a.language || '' })),
       availability: availability,
-      trailerUrl: trailerUrl || undefined,
+      trailerUrl: undefined,
       credits: (media as any).credits,
       voteAverage: (media as any).voteAverage,
     };

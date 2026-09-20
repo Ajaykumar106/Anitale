@@ -34,8 +34,8 @@ export default async function Home() {
       <section>
         <SectionHeader title={title} />
         <MediaRow>
-          {data.map((media) => (
-            <div key={`${title}-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
+          {data.map((media, index) => (
+            <div key={`${title}-${media.type}-${media.externalId}-${index}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
               <MediaCard
                 id={media.externalId}
                 title={media.title}
