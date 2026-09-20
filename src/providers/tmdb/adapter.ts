@@ -123,7 +123,7 @@ export class TMDBAdapter implements MetadataProvider {
       }));
   }
 
-  async getDiscover(type: MediaType, options?: { genre?: string, sort_by?: string, top_rated?: boolean, upcoming?: boolean, now_playing?: boolean, original_language?: string, airing_today?: boolean, on_the_air?: boolean }): Promise<ProviderMediaResult[]> {
+  async getDiscover(type: MediaType, options?: { genre?: string, sort_by?: string, top_rated?: boolean, upcoming?: boolean, now_playing?: boolean, original_language?: string, airing_today?: boolean, on_the_air?: boolean, provider?: string }): Promise<ProviderMediaResult[]> {
     let endpoint = type === 'MOVIE' ? '/discover/movie' : '/discover/tv';
     let extraQuery = '';
     if (type === 'ANIME') {
@@ -158,6 +158,10 @@ export class TMDBAdapter implements MetadataProvider {
     }
     if (options?.sort_by) {
       params.append('sort_by', options.sort_by);
+    }
+    if (options?.provider) {
+      params.append('with_watch_providers', options.provider);
+      params.append('watch_region', 'US');
     }
     if (options?.original_language && type !== 'ANIME') {
       params.append('with_original_language', options.original_language);
@@ -230,6 +234,8 @@ export class TMDBAdapter implements MetadataProvider {
         alternativeTitles: [], // Left empty for simplicity unless appending /alternative_titles
         trailerUrl,
         voteAverage: data.vote_average,
+        budget: data.budget,
+        revenue: data.revenue,
         credits: { cast, crew },
         seasons: type !== 'MOVIE' && data.seasons ? data.seasons.map((s: any) => ({
           seasonNumber: s.season_number,

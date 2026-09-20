@@ -10,6 +10,7 @@ interface Suggestion {
   title: string;
   type: string;
   year: number | null;
+  poster?: string;
 }
 
 export function SearchBar() {
@@ -101,11 +102,18 @@ export function SearchBar() {
                 <Link
                   key={s.id}
                   href={`/search?q=${encodeURIComponent(s.title)}`}
-                  className="block px-4 py-2 hover:bg-muted text-sm"
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-muted text-sm border-b border-white/5 last:border-0"
                   onClick={() => saveRecentSearch(s.title)}
                 >
-                  <span className="font-medium">{s.title}</span>
-                  {s.year && <span className="text-muted-foreground ml-2">({s.year})</span>}
+                  {s.poster ? (
+                    <img src={`https://image.tmdb.org/t/p/w92${s.poster}`} alt={s.title} className="w-10 h-14 object-cover rounded shadow-md" />
+                  ) : (
+                    <div className="w-10 h-14 bg-zinc-800 rounded flex items-center justify-center text-[10px] text-muted-foreground text-center">No Img</div>
+                  )}
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-white/90">{s.title}</span>
+                    <span className="text-muted-foreground text-xs uppercase">{s.type === 'MOVIE' ? 'Movie' : s.type === 'SERIES' ? 'Series' : 'Anime'} {s.year && `• ${s.year}`}</span>
+                  </div>
                 </Link>
               ))}
             </div>

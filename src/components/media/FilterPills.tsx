@@ -23,6 +23,9 @@ export function FilterPills() {
     { label: 'Comedy', icon: Laugh, active: currentGenre === '35', href: `${pathname}?genre=35` },
     { label: 'Romance', icon: Heart, active: currentGenre === '10749', href: `${pathname}?genre=10749` },
     { label: '2024', icon: Calendar, active: currentYear === '2024', href: `${pathname}?year=2024` },
+    { label: 'Netflix', icon: Star, active: searchParams.get('provider') === '8', href: `${pathname}?provider=8` },
+    { label: 'Prime', icon: Star, active: searchParams.get('provider') === '9', href: `${pathname}?provider=9` },
+    { label: 'Crunchyroll', icon: Star, active: searchParams.get('provider') === '283', href: `${pathname}?provider=283` },
   ];
 
   return (

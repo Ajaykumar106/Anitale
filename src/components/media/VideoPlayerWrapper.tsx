@@ -16,10 +16,10 @@ interface VideoPlayerProps {
 }
 
 const SERVERS = [
-  { id: 'vidsrc-icu', name: 'Server 1 (Primary HD)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.icu/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'embedsu', name: 'Server 2 (Fast & Reliable)', url: (type: string, id: string, s?: number, e?: number) => `https://embed.su/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'vidlink', name: 'Server 3 (No Ads)', url: (type: string, id: string, s?: number, e?: number) => `https://vidlink.pro/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'superembed', name: 'Server 4 (Hindi & Multi-Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
+  { id: 'embedsu', name: 'Server 1 (Fastest & Reliable)', url: (type: string, id: string, s?: number, e?: number) => `https://embed.su/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-me', name: 'Server 2 (Multi-Language)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.me/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
+  { id: 'vidsrc-cc', name: 'Server 3 (Backup HD)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.cc/v2/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'superembed', name: 'Server 4 (Hindi Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
 ];
 
 export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onNextEpisode }: VideoPlayerProps) {
@@ -135,8 +135,11 @@ export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onN
           />
           {onNextEpisode && (
             <Button 
-              onClick={onNextEpisode}
-              className="absolute bottom-4 right-4 z-30 bg-primary hover:bg-primary/90 text-white shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+              onClick={() => {
+                try { if (navigator.vibrate) navigator.vibrate([50]); } catch (e) {}
+                onNextEpisode();
+              }}
+              className="absolute bottom-4 right-4 z-30 bg-primary hover:bg-primary/90 text-white shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 active:scale-95"
             >
               Next Episode (Shift + N)
             </Button>

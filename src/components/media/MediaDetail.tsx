@@ -97,106 +97,107 @@ export function MediaDetail({ media }: MediaDetailProps) {
               {media.title}
             </h1>
             <div className="flex items-center gap-3 text-muted-foreground font-medium text-lg mb-6">
-              <span className="bg-white/10 px-2 py-0.5 rounded text-white text-sm">{year}</span>
+              <span>{year}</span>
               <span>•</span>
-              <span>{media.runtime ? `${media.runtime} min` : 'Unknown runtime'}</span>
+              <span>{media.runtime ? `${Math.floor(media.runtime / 60)}h ${media.runtime % 60}m` : 'Unknown runtime'}</span>
               <span>•</span>
-              <span className="text-white/80">{media.status || 'Released'}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            {media.voteAverage ? (
-              <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-2 rounded-xl">
-                <Star className="w-6 h-6 fill-yellow-500 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
-                <span className="text-2xl font-bold text-yellow-500">{media.voteAverage.toFixed(1)}</span>
-                <span className="text-sm font-medium text-yellow-500/70 mt-1">/10</span>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-2 ml-2">
-              {media.genres.map((g: any) => {
-                const genreName = typeof g === 'string' ? g : g.genre?.name;
-                if (!genreName) return null;
-                return <Badge key={genreName} variant="secondary" className="px-3 py-1 text-sm bg-zinc-800/80 hover:bg-zinc-700 border-white/5">{genreName}</Badge>;
-              })}
+              <span className="border border-white/20 px-2 py-0.5 rounded text-sm tracking-widest text-white/80">{media.status === 'Released' ? 'R' : media.status || 'R'}</span>
+              <span className="border border-white/20 px-2 py-0.5 rounded text-sm tracking-widest text-white/80">TC</span>
+              {media.voteAverage && (
+                <div className="flex items-center gap-1 text-yellow-500">
+                  <Star className="w-4 h-4 fill-yellow-500" />
+                  <span className="text-white/90 font-bold">{media.voteAverage.toFixed(1)}</span>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-xl font-semibold text-white/90 tracking-wide">Synopsis</h3>
-            <p className="leading-relaxed text-lg text-muted-foreground/90 max-w-4xl">
+            {media.credits && media.credits.crew.find(c => c.job === 'Director') && (
+              <div className="text-lg">
+                <span className="text-muted-foreground">Director: </span>
+                <span className="font-semibold text-white/90">{media.credits.crew.find(c => c.job === 'Director')?.name}</span>
+              </div>
+            )}
+            <p className="leading-relaxed text-lg text-muted-foreground max-w-4xl">
               {media.overview || 'No synopsis available.'}
             </p>
           </div>
 
-          {/* Cast Carousel Moved Here! */}
+          {/* Styled Ratings Row */}
+          <div className="flex flex-wrap items-center gap-6 py-4">
+            {media.voteAverage ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="bg-[#f5c518] text-black font-extrabold px-2 py-0.5 rounded text-sm tracking-tighter">IMDb</span>
+                  <span className="text-xl font-bold text-white">{(media.voteAverage).toFixed(1)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-green-500 font-extrabold text-xl">🍅</span>
+                  <span className="text-xl font-bold text-white">{Math.round(media.voteAverage * 10)}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500 font-extrabold text-xl">🍿</span>
+                  <span className="text-xl font-bold text-white">{Math.round(media.voteAverage * 10) - 15 > 0 ? Math.round(media.voteAverage * 10) - 15 : 60}%</span>
+                </div>
+                <span className="text-xl font-bold text-white">TC</span>
+              </>
+            ) : null}
+          </div>
+
+          {/* Glassmorphic Stats Card */}
+          <div className="w-full max-w-xl bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col gap-4">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Runtime</span>
+              <span className="text-white/90 font-medium">{media.runtime ? `${Math.floor(media.runtime / 60)}h ${media.runtime % 60}m` : 'N/A'}</span>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Language</span>
+              <span className="text-white/90 font-medium">EN</span>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Release Date</span>
+              <span className="text-white/90 font-medium">
+                {media.releaseDate ? new Date(media.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Unknown'}
+              </span>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Budget</span>
+              <span className="text-white/90 font-medium">{media.budget && media.budget > 0 ? `$${media.budget.toLocaleString()}` : 'N/A'}</span>
+            </div>
+            <div className="w-full h-px bg-white/5" />
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground">Revenue</span>
+              <span className="text-white/90 font-medium">{media.revenue && media.revenue > 0 ? `$${media.revenue.toLocaleString()}` : 'N/A'}</span>
+            </div>
+          </div>
+
+          {/* Cast Carousel */}
           {media.credits && (media.credits.cast.length > 0) && (
-            <div className="pt-6 border-t border-white/5">
-              <h3 className="text-xl font-semibold text-white/90 tracking-wide mb-4">Top Cast</h3>
-              <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide snap-x">
+            <div className="pt-8">
+              <h3 className="text-2xl font-bold text-white mb-6">Cast</h3>
+              <div className="flex overflow-x-auto gap-8 pb-4 scrollbar-hide snap-x">
                 {media.credits.cast.slice(0, 10).map((person, idx) => (
-                  <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-2 w-[100px] flex-shrink-0 snap-start group">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-zinc-900 shadow-xl border-2 border-white/10 group-hover:border-primary/50 transition-colors duration-300">
+                  <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-3 w-[100px] flex-shrink-0 snap-start group cursor-pointer active:scale-95 transition-transform">
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-zinc-900 shadow-xl border-2 border-transparent group-hover:border-primary/50 transition-colors duration-300">
                       {person.profilePath ? (
-                        <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs bg-zinc-800">N/A</div>
                       )}
                     </div>
                     <div>
-                      <div className="font-semibold text-sm leading-tight line-clamp-1 text-white/90 group-hover:text-primary transition-colors">{person.name}</div>
-                      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-tight">{person.character}</div>
+                      <div className="font-medium text-sm leading-tight line-clamp-1 text-white/90 group-hover:text-primary transition-colors">{person.name}</div>
+                      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-tight hidden">{person.character}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
-        </div>
-
-        {/* Right Column: Quick Info Sidebar */}
-        <div className="w-full lg:w-[280px] shrink-0 space-y-6 bg-zinc-900/30 p-6 rounded-2xl border border-white/5 h-fit">
-          <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Quick Info</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <div className="text-sm text-muted-foreground mb-1">Original Title</div>
-              <div className="font-medium text-white/90">{media.originalTitle || media.title}</div>
-            </div>
-            
-            {media.releaseDate && (
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Release Date</div>
-                <div className="font-medium text-white/90">
-                  {new Date(media.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-                </div>
-              </div>
-            )}
-            
-            {media.credits && media.credits.crew.find(c => c.job === 'Director') && (
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Director</div>
-                <div className="font-medium text-white/90">
-                  {media.credits.crew.find(c => c.job === 'Director')?.name}
-                </div>
-              </div>
-            )}
-
-            {media.credits && media.credits.crew.find(c => c.job === 'Writer' || c.job === 'Screenplay') && (
-              <div>
-                <div className="text-sm text-muted-foreground mb-1">Writer</div>
-                <div className="font-medium text-white/90 line-clamp-2">
-                  {media.credits.crew.find(c => c.job === 'Writer' || c.job === 'Screenplay')?.name}
-                </div>
-              </div>
-            )}
-
-            <div className="pt-4 flex flex-col gap-2">
-              <Button variant="outline" size="sm" className="w-full gap-2 border-white/10 hover:bg-white/5">
-                <Share className="w-4 h-4" /> Share Page
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
 

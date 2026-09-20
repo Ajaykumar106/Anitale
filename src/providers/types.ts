@@ -18,12 +18,14 @@ export interface ProviderMediaDetails extends ProviderMediaResult {
   alternativeTitles: { title: string; language: string }[];
   availability?: ProviderAvailabilityData[];
   trailerUrl?: string;
-  credits?: {
-    cast: { name: string; character: string; profilePath: string | null }[];
-    crew: { name: string; job: string; profilePath: string | null }[];
-  };
   voteAverage?: number;
   voteCount?: number;
+  budget?: number;
+  revenue?: number;
+  credits?: {
+    cast: { name: string; character: string; profilePath?: string }[];
+    crew: { name: string; job: string; profilePath?: string }[];
+  };
   seasons?: {
     seasonNumber: number;
     name: string;
