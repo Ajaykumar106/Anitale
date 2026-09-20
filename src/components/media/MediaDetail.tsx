@@ -191,7 +191,7 @@ export function MediaDetail({ media }: MediaDetailProps) {
                   <Search className="w-4 h-4" /> Telegram Search
                 </Button>
               </a>
-              <a href={`https://duckduckgo.com/?q=${encodeURIComponent(media.title + ' streaming links')}`} target="_blank" rel="noopener noreferrer">
+              <a href={`https://duckduckgo.com/?q=${encodeURIComponent('Watch ' + media.title + ' free high quality streaming online')}`} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" className="gap-2">
                   <Search className="w-4 h-4" /> Web Search
                 </Button>

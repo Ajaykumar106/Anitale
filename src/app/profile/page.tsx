@@ -15,7 +15,7 @@ export default async function ProfilePage() {
     <div className="container py-8 max-w-3xl">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Profile</h1>
-        <Link href="/settings" className="text-sm font-medium border px-4 py-2 rounded hover:bg-accent">
+        <Link href="/profile/settings" className="text-sm font-medium border px-4 py-2 rounded hover:bg-accent">
           Edit Settings
         </Link>
       </div>
