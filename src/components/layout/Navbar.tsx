@@ -10,23 +10,17 @@ export async function Navbar() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center px-4">
-        <div className="mr-4 hidden md:flex">
+        {/* Desktop Left */}
+        <div className="mr-4 flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <span className="font-bold text-primary">Anitale</span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
             <Link href="/movie" className="transition-colors hover:text-foreground/80 text-foreground/60">Movies</Link>
             <Link href="/show" className="transition-colors hover:text-foreground/80 text-foreground/60">Series</Link>
             <Link href="/anime" className="transition-colors hover:text-foreground/80 text-foreground/60">Anime</Link>
             <Link href="/news" className="transition-colors hover:text-foreground/80 text-foreground/60">News</Link>
           </nav>
-        </div>
-        
-        {/* Mobile Left */}
-        <div className="flex md:hidden mr-4">
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-primary">Anitale</span>
-          </Link>
         </div>
         
         <div className="flex flex-1 items-center justify-end space-x-2">
