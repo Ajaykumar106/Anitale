@@ -55,6 +55,8 @@ export const viewport = {
   maximumScale: 1,
 };
 
+import { SessionProviderWrapper } from "@/components/auth/SessionProviderWrapper";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,12 +67,14 @@ export default function RootLayout({
       <body
         className={`${inter.className} min-h-screen bg-background font-sans antialiased`}
       >
-        <div className="relative flex min-h-screen flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <BottomNav />
-        </div>
+        <SessionProviderWrapper>
+          <div className="relative flex min-h-screen flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <BottomNav />
+          </div>
+        </SessionProviderWrapper>
         <script
           dangerouslySetInnerHTML={{
             __html: `

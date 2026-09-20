@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, Film, Tv, Bookmark, User } from 'lucide-react';
+import { Home, Film, Search, Bookmark, User } from 'lucide-react';
 import { auth } from '@/lib/auth';
 
 export async function BottomNav() {
@@ -12,13 +12,13 @@ export async function BottomNav() {
           <Home className="w-5 h-5 mb-1" />
           <span className="text-[10px] font-medium">Home</span>
         </Link>
+        <Link href="/search" className="flex flex-col items-center justify-center w-16 text-muted-foreground hover:text-foreground">
+          <Search className="w-5 h-5 mb-1" />
+          <span className="text-[10px] font-medium">Search</span>
+        </Link>
         <Link href="/movie" className="flex flex-col items-center justify-center w-16 text-muted-foreground hover:text-foreground">
           <Film className="w-5 h-5 mb-1" />
           <span className="text-[10px] font-medium">Movies</span>
-        </Link>
-        <Link href="/show" className="flex flex-col items-center justify-center w-16 text-muted-foreground hover:text-foreground">
-          <Tv className="w-5 h-5 mb-1" />
-          <span className="text-[10px] font-medium">Series</span>
         </Link>
         <Link href={session ? "/watchlist" : "/login"} className="flex flex-col items-center justify-center w-16 text-muted-foreground hover:text-foreground">
           <Bookmark className="w-5 h-5 mb-1" />
