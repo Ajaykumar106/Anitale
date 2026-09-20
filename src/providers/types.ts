@@ -23,6 +23,23 @@ export interface ProviderMediaDetails extends ProviderMediaResult {
     crew: { name: string; job: string; profilePath: string | null }[];
   };
   voteAverage?: number;
+  seasons?: {
+    seasonNumber: number;
+    name: string;
+    episodeCount: number;
+    posterPath: string | null;
+  }[];
+}
+
+export interface ProviderEpisodeDetails {
+  id: string;
+  name: string;
+  overview: string;
+  episodeNumber: number;
+  seasonNumber: number;
+  runtime: number | null;
+  stillPath: string | null;
+  airDate: Date | null;
 }
 
 export interface ProviderAvailabilityData {
@@ -37,5 +54,6 @@ export interface MetadataProvider {
   search(query: string, options?: { page?: number; type?: MediaType }): Promise<ProviderMediaResult[]>;
   getTrending(type?: MediaType): Promise<ProviderMediaResult[]>;
   getMediaDetails(externalId: string, type: MediaType): Promise<ProviderMediaDetails | null>;
+  getSeasonDetails?(externalId: string, seasonNumber: number): Promise<ProviderEpisodeDetails[]>;
   getAvailability(externalId: string, type: MediaType, region: string): Promise<ProviderAvailabilityData[]>;
 }

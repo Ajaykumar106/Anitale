@@ -16,6 +16,7 @@ import { LiveDiscussion } from './LiveDiscussion';
 import { Star, Search } from 'lucide-react';
 import { SimilarMedia } from './SimilarMedia';
 import { VideoPlayerWrapper } from './VideoPlayerWrapper';
+import { EpisodeSelector } from './EpisodeSelector';
 import { DiscoveryRows } from './DiscoveryRows';
 
 interface MediaDetailProps {
@@ -57,8 +58,12 @@ export function MediaDetail({ media }: MediaDetailProps) {
         <span className="text-foreground font-medium" aria-current="page">{media.title}</span>
       </nav>
 
-      {/* Video Player Wrapper (User will inject iframe here) */}
-      <VideoPlayerWrapper tmdbId={media.externalId} type={media.type as 'MOVIE' | 'SERIES' | 'ANIME'} />
+      {/* Video Player & Episode Selector */}
+      {media.type !== 'MOVIE' && media.seasons && media.seasons.length > 0 ? (
+        <EpisodeSelector tmdbId={media.externalId} type={media.type as 'SERIES' | 'ANIME'} seasons={media.seasons} />
+      ) : (
+        <VideoPlayerWrapper tmdbId={media.externalId} type={media.type as 'MOVIE' | 'SERIES' | 'ANIME'} />
+      )}
 
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row gap-8">
@@ -168,17 +173,20 @@ export function MediaDetail({ media }: MediaDetailProps) {
 
       {/* Availability Section */}
       <section>
-        <SectionHeader title="Where to Watch" className="px-0 md:px-0 lg:px-0" />
+        <SectionHeader title="Available on OTT Platforms" className="px-0 md:px-0 lg:px-0" />
         {media.availability && media.availability.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
             {media.availability.map((provider: any, idx: number) => (
-              <div key={`${provider.providerExternalId}-${idx}`} className="flex items-center space-x-4 p-4 bg-zinc-900/50 hover:bg-zinc-800/80 transition-colors border border-white/5 rounded-xl shadow-sm">
-                {provider.logoPath && (
-                  <img src={`https://image.tmdb.org/t/p/w92${provider.logoPath}`} alt={provider.providerName} className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg shadow-sm" />
-                )}
-                <div className="flex flex-col">
-                  <div className="font-bold text-base">{provider.providerName}</div>
-                  <Badge variant="secondary" className="w-fit mt-1 text-[10px] uppercase tracking-wider">{provider.type}</Badge>
+              <div key={`${provider.providerExternalId}-${idx}`} className="flex flex-col items-center flex-shrink-0 w-24">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.1)] border border-white/10 bg-zinc-900 flex items-center justify-center p-0.5 hover:scale-105 transition-transform duration-300">
+                  {provider.logoPath ? (
+                    <img src={`https://image.tmdb.org/t/p/w154${provider.logoPath}`} alt={provider.providerName} className="w-full h-full object-cover rounded-xl md:rounded-[22px]" />
+                  ) : (
+                    <span className="text-xs text-center font-bold text-muted-foreground p-2">{provider.providerName}</span>
+                  )}
+                </div>
+                <div className="mt-2 text-center">
+                  <Badge variant="outline" className="text-[10px] uppercase tracking-wider bg-zinc-900/50 border-white/10">{provider.type}</Badge>
                 </div>
               </div>
             ))}

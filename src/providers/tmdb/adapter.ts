@@ -231,6 +231,12 @@ export class TMDBAdapter implements MetadataProvider {
         trailerUrl,
         voteAverage: data.vote_average,
         credits: { cast, crew },
+        seasons: type !== 'MOVIE' && data.seasons ? data.seasons.map((s: any) => ({
+          seasonNumber: s.season_number,
+          name: s.name,
+          episodeCount: s.episode_count,
+          posterPath: s.poster_path,
+        })).filter((s: any) => s.seasonNumber > 0) : undefined,
       };
     } catch (error) {
       console.error(`Failed to fetch details for ${externalId}:`, error);
@@ -238,7 +244,30 @@ export class TMDBAdapter implements MetadataProvider {
     }
   }
 
-  async getAvailability(externalId: string, type: MediaType, region: string = 'US'): Promise<ProviderAvailabilityData[]> {
+  async getSeasonDetails(externalId: string, seasonNumber: number): Promise<any[]> {
+    try {
+      const response = await this.fetchWithRetry(`/tv/${externalId}/season/${seasonNumber}`);
+      const data = await response.json();
+      
+      if (!data.episodes) return [];
+      
+      return data.episodes.map((ep: any) => ({
+        id: ep.id.toString(),
+        name: ep.name,
+        overview: ep.overview,
+        episodeNumber: ep.episode_number,
+        seasonNumber: ep.season_number,
+        runtime: ep.runtime,
+        stillPath: ep.still_path,
+        airDate: ep.air_date ? new Date(ep.air_date) : null,
+      }));
+    } catch (error) {
+      console.error(`Failed to fetch season details for ${externalId} season ${seasonNumber}:`, error);
+      return [];
+    }
+  }
+
+  async getAvailability(externalId: string, type: MediaType, region: string = 'US'): Promise<any[]> {
     try {
       const endpoint = type === 'MOVIE' ? `/movie/${externalId}/watch/providers` : `/tv/${externalId}/watch/providers`;
       const response = await this.fetchWithRetry(endpoint);
