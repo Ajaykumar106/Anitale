@@ -23,6 +23,7 @@ export interface ProviderMediaDetails extends ProviderMediaResult {
     crew: { name: string; job: string; profilePath: string | null }[];
   };
   voteAverage?: number;
+  voteCount?: number;
   seasons?: {
     seasonNumber: number;
     name: string;

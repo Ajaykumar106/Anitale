@@ -123,6 +123,8 @@ model Media {
   releaseDate   DateTime?
   status        String?
   runtime       Int? // In minutes
+  voteAverage   Float?
+  voteCount     Int?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 

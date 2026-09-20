@@ -13,7 +13,7 @@ import { MediaReviews } from '../community/MediaReviews';
 import { Suspense } from 'react';
 import { ShareButton } from './ShareButton';
 import { LiveDiscussion } from './LiveDiscussion';
-import { Star, Search } from 'lucide-react';
+import { Play, Plus, Search, Star, Share } from 'lucide-react';
 import { SimilarMedia } from './SimilarMedia';
 import { VideoPlayerWrapper } from './VideoPlayerWrapper';
 import { EpisodeSelector } from './EpisodeSelector';
@@ -66,110 +66,139 @@ export function MediaDetail({ media }: MediaDetailProps) {
       )}
 
       {/* Hero Section */}
-      <div className="flex flex-col md:flex-row gap-8">
-        <div className="w-[200px] sm:w-[250px] md:w-[300px] shrink-0 mx-auto md:mx-0">
+      <div className="flex flex-col lg:flex-row gap-8">
+        
+        {/* Left Column: Poster & Quick Actions */}
+        <div className="w-[200px] sm:w-[250px] md:w-[300px] shrink-0 mx-auto lg:mx-0 flex flex-col gap-4">
           <PosterImage
             src={media.posterPath}
             alt={media.title}
             priority
-            className="w-full rounded-lg shadow-2xl"
+            className="w-full rounded-xl shadow-2xl"
           />
-        </div>
-        
-        <div className="flex-1 space-y-6">
-          <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight mb-2">
-              {media.title}
-            </h1>
-            <div className="flex items-center gap-4 text-muted-foreground text-lg mb-4">
-              <span>{year}</span>
-              <span>•</span>
-              <span>{media.runtime ? `${media.runtime} min` : 'Unknown runtime'}</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            {media.voteAverage !== undefined && (
-              <Badge variant="default" className="bg-yellow-500/20 text-yellow-600 hover:bg-yellow-500/30 border-yellow-500/50 text-lg font-bold px-4 py-2 flex items-center gap-2">
-                <Star className="w-6 h-6 fill-yellow-500 text-yellow-500" />
-                ⭐ {media.voteAverage.toFixed(1)}/10
-              </Badge>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {media.genres.map((g: any) => {
-                const genreName = typeof g === 'string' ? g : g.genre?.name;
-                if (!genreName) return null;
-                return <Badge key={genreName} variant="secondary">{genreName}</Badge>;
-              })}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Synopsis</h3>
-            <p className="leading-relaxed text-muted-foreground max-w-3xl">
-              {media.overview || 'No synopsis available.'}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-2">
             <WatchlistButton externalId={media.externalId} type={media.type as MediaType} />
-            {/* Only render if we have a valid internal DB id, since FollowReleaseButton requires it */}
+            {/* Only render if we have a valid internal DB id */}
             {(media as any).id && (
               <FollowReleaseButton mediaId={(media as any).id} />
             )}
-            <Button size="lg" variant="outline">Rate</Button>
-            <ShareButton 
-              title={media.title} 
-              text={`Check out ${media.title} on Anitale!`} 
-              url={`/${media.type === 'MOVIE' ? 'movie' : media.type === 'SERIES' ? 'show' : 'anime'}/${media.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${media.externalId}`} 
-            />
             <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer">
-              <Button variant="default" className="gap-2 bg-green-600 hover:bg-green-700 text-white">
-                Host Watch Party (Google Meet)
+              <Button variant="default" className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-900/20">
+                Host Watch Party (Live 🍿)
               </Button>
             </a>
           </div>
         </div>
-      </div>
-
-      {/* Cast & Crew Section */}
-      {media.credits && (media.credits.cast.length > 0 || media.credits.crew.length > 0) && (
-        <section className="space-y-4">
-          <SectionHeader title="Cast & Crew" className="px-0 md:px-0 lg:px-0" />
-          <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
-            {media.credits.cast.map((person, idx) => (
-              <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-2 w-28 flex-shrink-0">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted shadow-md border-2 border-white/10">
-                  {person.profilePath ? (
-                    <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">N/A</div>
-                  )}
-                </div>
-                <div>
-                  <div className="font-semibold text-sm leading-tight line-clamp-1">{person.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{person.character}</div>
-                </div>
-              </div>
-            ))}
-            {media.credits.crew.map((person, idx) => (
-              <div key={`crew-${idx}`} className="flex flex-col items-center text-center space-y-2 w-28 flex-shrink-0">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted shadow-md border-2 border-white/10">
-                  {person.profilePath ? (
-                    <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">N/A</div>
-                  )}
-                </div>
-                <div>
-                  <div className="font-semibold text-sm leading-tight line-clamp-1">{person.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{person.job}</div>
-                </div>
-              </div>
-            ))}
+        
+        {/* Middle Column: Title, Synopsis, Cast */}
+        <div className="flex-1 space-y-6">
+          <div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tighter mb-2 drop-shadow-sm">
+              {media.title}
+            </h1>
+            <div className="flex items-center gap-3 text-muted-foreground font-medium text-lg mb-6">
+              <span className="bg-white/10 px-2 py-0.5 rounded text-white text-sm">{year}</span>
+              <span>•</span>
+              <span>{media.runtime ? `${media.runtime} min` : 'Unknown runtime'}</span>
+              <span>•</span>
+              <span className="text-white/80">{media.status || 'Released'}</span>
+            </div>
           </div>
-        </section>
-      )}
+
+          <div className="flex flex-wrap items-center gap-4">
+            {media.voteAverage ? (
+              <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 px-4 py-2 rounded-xl">
+                <Star className="w-6 h-6 fill-yellow-500 text-yellow-500 drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+                <span className="text-2xl font-bold text-yellow-500">{media.voteAverage.toFixed(1)}</span>
+                <span className="text-sm font-medium text-yellow-500/70 mt-1">/10</span>
+              </div>
+            ) : null}
+            <div className="flex flex-wrap gap-2 ml-2">
+              {media.genres.map((g: any) => {
+                const genreName = typeof g === 'string' ? g : g.genre?.name;
+                if (!genreName) return null;
+                return <Badge key={genreName} variant="secondary" className="px-3 py-1 text-sm bg-zinc-800/80 hover:bg-zinc-700 border-white/5">{genreName}</Badge>;
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-xl font-semibold text-white/90 tracking-wide">Synopsis</h3>
+            <p className="leading-relaxed text-lg text-muted-foreground/90 max-w-4xl">
+              {media.overview || 'No synopsis available.'}
+            </p>
+          </div>
+
+          {/* Cast Carousel Moved Here! */}
+          {media.credits && (media.credits.cast.length > 0) && (
+            <div className="pt-6 border-t border-white/5">
+              <h3 className="text-xl font-semibold text-white/90 tracking-wide mb-4">Top Cast</h3>
+              <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide snap-x">
+                {media.credits.cast.slice(0, 10).map((person, idx) => (
+                  <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-2 w-[100px] flex-shrink-0 snap-start group">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-zinc-900 shadow-xl border-2 border-white/10 group-hover:border-primary/50 transition-colors duration-300">
+                      {person.profilePath ? (
+                        <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs bg-zinc-800">N/A</div>
+                      )}
+                    </div>
+                    <div>
+                      <div className="font-semibold text-sm leading-tight line-clamp-1 text-white/90 group-hover:text-primary transition-colors">{person.name}</div>
+                      <div className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-tight">{person.character}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Quick Info Sidebar */}
+        <div className="w-full lg:w-[280px] shrink-0 space-y-6 bg-zinc-900/30 p-6 rounded-2xl border border-white/5 h-fit">
+          <h3 className="text-lg font-bold text-white border-b border-white/10 pb-2">Quick Info</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Original Title</div>
+              <div className="font-medium text-white/90">{media.originalTitle || media.title}</div>
+            </div>
+            
+            {media.releaseDate && (
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Release Date</div>
+                <div className="font-medium text-white/90">
+                  {new Date(media.releaseDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
+              </div>
+            )}
+            
+            {media.credits && media.credits.crew.find(c => c.job === 'Director') && (
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Director</div>
+                <div className="font-medium text-white/90">
+                  {media.credits.crew.find(c => c.job === 'Director')?.name}
+                </div>
+              </div>
+            )}
+
+            {media.credits && media.credits.crew.find(c => c.job === 'Writer' || c.job === 'Screenplay') && (
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">Writer</div>
+                <div className="font-medium text-white/90 line-clamp-2">
+                  {media.credits.crew.find(c => c.job === 'Writer' || c.job === 'Screenplay')?.name}
+                </div>
+              </div>
+            )}
+
+            <div className="pt-4 flex flex-col gap-2">
+              <Button variant="outline" size="sm" className="w-full gap-2 border-white/10 hover:bg-white/5">
+                <Share className="w-4 h-4" /> Share Page
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Availability Section */}
       <section>

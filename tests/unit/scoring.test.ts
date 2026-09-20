@@ -30,7 +30,9 @@ describe('Recommendation Scoring Engine (Phase 11)', () => {
     posterPath: null,
     backdropPath: null,
     status: null,
-    runtime: null
+    runtime: null,
+    voteAverage: null,
+    voteCount: null
   });
 
   it('awards +10 points per matched genre', () => {

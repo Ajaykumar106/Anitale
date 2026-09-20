@@ -31,7 +31,27 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
     if (localMedia) {
       const ageMs = Date.now() - localMedia.updatedAt.getTime();
       if (ageMs < CACHE_TTL_MS) {
-        return localMedia;
+        // Map local DB format to expected frontend format
+        return {
+          ...localMedia,
+          voteAverage: localMedia.voteAverage || 0,
+          credits: {
+            cast: localMedia.cast.map((c: any) => ({
+              id: c.person.externalId,
+              name: c.person.name,
+              character: c.character,
+              order: c.order,
+              profilePath: c.person.profilePath,
+            })),
+            crew: localMedia.crew.map((c: any) => ({
+              id: c.person.externalId,
+              name: c.person.name,
+              job: c.job,
+              department: c.department,
+              profilePath: c.person.profilePath,
+            }))
+          }
+        };
       }
     }
   } catch (dbError) {
@@ -62,6 +82,15 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
           availability: { include: { provider: true } },
         }
       });
+      if (dbMedia && providerData.voteAverage) {
+        await prisma.media.update({
+          where: { id: dbMedia.id },
+          data: { 
+            voteAverage: providerData.voteAverage,
+            voteCount: providerData.voteCount || 0
+          }
+        });
+      }
       return dbMedia ? {
         ...dbMedia,
         credits: providerData.credits,

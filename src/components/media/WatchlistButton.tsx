@@ -45,8 +45,16 @@ export function WatchlistButton({ externalId, type, initialInWatchlist = false }
       variant={inWatchlist ? "secondary" : "default"}
       onClick={handleToggle}
       disabled={isPending}
+      className={`group w-full gap-2 transition-all ${inWatchlist ? 'hover:bg-destructive hover:text-destructive-foreground' : ''}`}
     >
-      {inWatchlist ? '✓ In Watchlist' : 'Add to Watchlist'}
+      {inWatchlist ? (
+        <>
+          <span className="group-hover:hidden">✓ In Watchlist</span>
+          <span className="hidden group-hover:inline">✕ Remove</span>
+        </>
+      ) : (
+        '+ Add to Watchlist'
+      )}
     </Button>
   );
 }

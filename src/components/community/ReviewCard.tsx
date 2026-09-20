@@ -33,19 +33,16 @@ export function ReviewCard({ review }: { review: any }) {
         </div>
       </div>
 
-      <div className="text-sm leading-relaxed">
+      <div className="text-sm leading-relaxed relative">
         {review.hasSpoilers && !showSpoiler ? (
-          <div className="relative rounded-md border border-destructive/20 bg-destructive/10 p-6 flex flex-col items-center justify-center space-y-3">
-            <div className="text-destructive font-semibold flex items-center gap-2">
-              <Eye className="w-4 h-4" />
-              Spoiler Warning
+          <div className="relative cursor-pointer group" onClick={() => setShowSpoiler(true)}>
+            <p className="whitespace-pre-wrap blur-md select-none opacity-50 transition-all duration-300 group-hover:blur-sm">{review.content}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 px-4 py-2 rounded-lg flex items-center gap-2 text-white font-medium shadow-xl group-hover:bg-zinc-800 transition-colors">
+                <Eye className="w-4 h-4 text-primary" />
+                Tap to Reveal Spoiler
+              </div>
             </div>
-            <p className="text-muted-foreground text-center text-xs">
-              This review contains story spoilers.
-            </p>
-            <Button variant="outline" size="sm" onClick={() => setShowSpoiler(true)}>
-              Reveal Spoilers
-            </Button>
           </div>
         ) : (
           <p className="whitespace-pre-wrap">{review.content}</p>
