@@ -16,10 +16,11 @@ interface VideoPlayerProps {
 }
 
 const SERVERS = [
-  { id: 'embedsu', name: 'Server 1 (Fastest & Reliable)', url: (type: string, id: string, s?: number, e?: number) => `https://embed.su/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'vidsrc-me', name: 'Server 2 (Multi-Language)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.me/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
-  { id: 'vidsrc-cc', name: 'Server 3 (Backup HD)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.cc/v2/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'superembed', name: 'Server 4 (Hindi Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
+  { id: 'vidsrc-in', name: 'Server 1 (Primary - DNS Bypass)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.in/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
+  { id: 'vidsrc-pm', name: 'Server 2 (Fast Alternative)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pm/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
+  { id: 'vidsrc-cc', name: 'Server 3 (HD Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.cc/v2/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'autoembed', name: 'Server 4 (AutoEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://tom.autoembed.cc/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'superembed', name: 'Server 5 (Hindi/Multi-Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
 ];
 
 export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onNextEpisode }: VideoPlayerProps) {

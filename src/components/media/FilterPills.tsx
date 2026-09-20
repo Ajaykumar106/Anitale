@@ -37,10 +37,10 @@ export function FilterPills() {
             key={filter.label}
             href={filter.href}
             className={cn(
-              "flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-medium transition-colors border",
+              "flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors border",
               filter.active 
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-secondary/50 text-foreground border-transparent hover:bg-secondary/80 hover:border-border"
+                ? "bg-white text-black border-white shadow-sm"
+                : "bg-zinc-900 text-white/80 border-transparent hover:bg-zinc-800"
             )}
           >
             <Icon className="h-4 w-4" />
