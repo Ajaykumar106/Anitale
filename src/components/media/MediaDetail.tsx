@@ -16,6 +16,7 @@ import { LiveDiscussion } from './LiveDiscussion';
 import { Star, Search } from 'lucide-react';
 import { SimilarMedia } from './SimilarMedia';
 import { VideoPlayerWrapper } from './VideoPlayerWrapper';
+import { DiscoveryRows } from './DiscoveryRows';
 
 interface MediaDetailProps {
 
@@ -86,7 +87,7 @@ export function MediaDetail({ media }: MediaDetailProps) {
             {media.voteAverage !== undefined && (
               <Badge variant="default" className="bg-yellow-500/20 text-yellow-600 hover:bg-yellow-500/30 border-yellow-500/50 text-lg font-bold px-4 py-2 flex items-center gap-2">
                 <Star className="w-6 h-6 fill-yellow-500 text-yellow-500" />
-                {media.voteAverage.toFixed(1)} / 10
+                ⭐ {media.voteAverage.toFixed(1)}/10
               </Badge>
             )}
             <div className="flex flex-wrap gap-2">
@@ -130,34 +131,34 @@ export function MediaDetail({ media }: MediaDetailProps) {
       {media.credits && (media.credits.cast.length > 0 || media.credits.crew.length > 0) && (
         <section className="space-y-4">
           <SectionHeader title="Cast & Crew" className="px-0 md:px-0 lg:px-0" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
             {media.credits.cast.map((person, idx) => (
-              <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-2">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted flex-shrink-0 shadow-md">
+              <div key={`cast-${idx}`} className="flex flex-col items-center text-center space-y-2 w-28 flex-shrink-0">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted shadow-md border-2 border-white/10">
                   {person.profilePath ? (
                     <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">N/A</div>
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">N/A</div>
                   )}
                 </div>
                 <div>
-                  <div className="font-semibold text-sm leading-tight">{person.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{person.character}</div>
+                  <div className="font-semibold text-sm leading-tight line-clamp-1">{person.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{person.character}</div>
                 </div>
               </div>
             ))}
             {media.credits.crew.map((person, idx) => (
-              <div key={`crew-${idx}`} className="flex flex-col items-center text-center space-y-2">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted flex-shrink-0 shadow-md">
+              <div key={`crew-${idx}`} className="flex flex-col items-center text-center space-y-2 w-28 flex-shrink-0">
+                <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden bg-muted shadow-md border-2 border-white/10">
                   {person.profilePath ? (
                     <img src={`https://image.tmdb.org/t/p/w185${person.profilePath}`} alt={person.name} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">N/A</div>
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">N/A</div>
                   )}
                 </div>
                 <div>
-                  <div className="font-semibold text-sm leading-tight">{person.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{person.job}</div>
+                  <div className="font-semibold text-sm leading-tight line-clamp-1">{person.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{person.job}</div>
                 </div>
               </div>
             ))}
@@ -199,6 +200,11 @@ export function MediaDetail({ media }: MediaDetailProps) {
               <a href={`https://www.google.com/search?q=${encodeURIComponent(media.title + ' cast and release info')}`} target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" className="gap-2">
                   <Search className="w-4 h-4" /> Search Cast & Info
+                </Button>
+              </a>
+              <a href={`https://www.google.com/search?q=${encodeURIComponent('When is next season of ' + media.title + ' coming out')}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="gap-2 text-yellow-500 border-yellow-500/50 hover:bg-yellow-500 hover:text-white">
+                  <Search className="w-4 h-4" /> Search Next Season / Part Info
                 </Button>
               </a>
             </div>
@@ -247,6 +253,10 @@ export function MediaDetail({ media }: MediaDetailProps) {
       {/* Similar & Recommended */}
       <Suspense fallback={<div className="animate-pulse h-48 bg-muted rounded-md" />}>
         <SimilarMedia externalId={media.externalId} type={media.type as MediaType} />
+      </Suspense>
+
+      <Suspense fallback={<div className="animate-pulse h-48 bg-muted rounded-md" />}>
+        <DiscoveryRows type={media.type as MediaType} />
       </Suspense>
     </div>
     </div>

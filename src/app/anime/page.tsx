@@ -13,7 +13,22 @@ export const metadata: Metadata = {
 
 export const revalidate = 43200;
 
-export default async function AnimePage() {
+import { FilterPills } from '@/components/media/FilterPills';
+
+export default async function AnimePage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const genre = typeof searchParams.genre === 'string' ? searchParams.genre : undefined;
+  const topRatedParam = searchParams.top_rated === 'true';
+
+  let filteredMedia: any[] | null = null;
+
+  if (genre || topRatedParam) {
+    filteredMedia = await getDiscoverMedia(MediaType.ANIME, { genre, top_rated: topRatedParam }) || [];
+  }
+
   const [trending, topRated, airingToday, onTheAir] = await Promise.all([
     getTrendingMedia(MediaType.ANIME),
     getDiscoverMedia(MediaType.ANIME, { top_rated: true }),
@@ -52,17 +67,41 @@ export default async function AnimePage() {
     );
   };
 
+  const bannerItems = filteredMedia ? filteredMedia : (airingToday && airingToday.length > 0 ? airingToday : trending);
+
   return (
     <div className="w-full pb-8 space-y-8 md:space-y-12">
       <Suspense fallback={<div className="w-full h-[75vh] md:h-[85vh] bg-muted animate-pulse" />}>
-        <HeroBanner items={airingToday && airingToday.length > 0 ? airingToday : trending} type={MediaType.ANIME} />
+        <HeroBanner items={bannerItems} type={MediaType.ANIME} />
       </Suspense>
 
       <div className="space-y-6 md:space-y-10">
-        {renderRow("Trending Anime", trending)}
-        {renderRow("Airing Today (Simulcasts)", airingToday)}
-        {renderRow("Currently Airing", onTheAir)}
-        {renderRow("Top Rated Anime", topRated)}
+        <FilterPills />
+        
+        {filteredMedia ? (
+          <div className="px-4 md:px-6">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 md:gap-4 lg:gap-6">
+              {filteredMedia.map((media) => (
+                <div key={`grid-${media.externalId}`} className="w-full">
+                  <MediaCard
+                    id={media.externalId}
+                    title={media.title}
+                    type={media.type}
+                    posterPath={media.posterPath}
+                    year={media.releaseDate ? new Date(media.releaseDate).getFullYear() : undefined}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            {renderRow("Trending Anime", trending)}
+            {renderRow("Airing Today (Simulcasts)", airingToday)}
+            {renderRow("Currently Airing", onTheAir)}
+            {renderRow("Top Rated Anime", topRated)}
+          </>
+        )}
       </div>
     </div>
   );

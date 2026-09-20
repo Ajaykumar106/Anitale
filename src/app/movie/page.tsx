@@ -12,18 +12,49 @@ export const metadata: Metadata = {
 
 export const revalidate = 43200;
 
-export default async function MoviesPage() {
-  const [upcoming, trending, topRated, action, romance, sciFi, comedy] = await Promise.all([
-    getDiscoverMedia(MediaType.MOVIE, { upcoming: true }),
-    getTrendingMedia(MediaType.MOVIE),
-    getDiscoverMedia(MediaType.MOVIE, { top_rated: true }),
-    getDiscoverMedia(MediaType.MOVIE, { genre: '28' }), // Action
-    getDiscoverMedia(MediaType.MOVIE, { genre: '10749' }), // Romance
-    getDiscoverMedia(MediaType.MOVIE, { genre: '878' }), // Sci-Fi
-    getDiscoverMedia(MediaType.MOVIE, { genre: '35' }), // Comedy
-  ]);
-  
-  if (!trending || trending.length === 0) {
+export default async function MoviesPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const genre = typeof searchParams.genre === 'string' ? searchParams.genre : undefined;
+  const topRated = searchParams.top_rated === 'true';
+  // Year filter can be added to getDiscoverMedia if supported, omitting for simplicity if TMDB adapter doesn't explicitly handle it yet.
+
+  let displayMedia: any[] = [];
+  let bannerMedia: any[] = [];
+
+  if (genre || topRated) {
+    displayMedia = await getDiscoverMedia(MediaType.MOVIE, { genre, top_rated: topRated }) || [];
+    bannerMedia = displayMedia;
+  } else {
+    const [upcoming, trending, topRatedRes, action, romance, sciFi, comedy] = await Promise.all([
+      getDiscoverMedia(MediaType.MOVIE, { upcoming: true }),
+      getTrendingMedia(MediaType.MOVIE),
+      getDiscoverMedia(MediaType.MOVIE, { top_rated: true }),
+      getDiscoverMedia(MediaType.MOVIE, { genre: '28' }), // Action
+      getDiscoverMedia(MediaType.MOVIE, { genre: '10749' }), // Romance
+      getDiscoverMedia(MediaType.MOVIE, { genre: '878' }), // Sci-Fi
+      getDiscoverMedia(MediaType.MOVIE, { genre: '35' }), // Comedy
+    ]);
+
+    const allMedia = [
+      ...(trending || []),
+      ...(upcoming || []),
+      ...(topRatedRes || []),
+      ...(action || []),
+      ...(sciFi || []),
+      ...(romance || []),
+      ...(comedy || []),
+    ];
+
+    displayMedia = Array.from(
+      new Map(allMedia.map((item) => [item.externalId, item])).values()
+    );
+    bannerMedia = upcoming && upcoming.length > 0 ? upcoming : (trending || []);
+  }
+
+  if (!displayMedia || displayMedia.length === 0) {
     return (
       <div className="w-full px-4 py-8">
         <h1 className="text-3xl font-bold">Movies</h1>
@@ -32,25 +63,12 @@ export default async function MoviesPage() {
     );
   }
 
-  // Combine them all and deduplicate based on externalId
-  const allMedia = [
-    ...(trending || []),
-    ...(upcoming || []),
-    ...(topRated || []),
-    ...(action || []),
-    ...(sciFi || []),
-    ...(romance || []),
-    ...(comedy || []),
-  ];
-
-  const uniqueMedia = Array.from(
-    new Map(allMedia.map((item) => [item.externalId, item])).values()
-  );
+  const uniqueMedia = displayMedia;
 
   return (
     <div className="w-full pb-8 space-y-8 md:space-y-12">
       <Suspense fallback={<div className="w-full h-[75vh] md:h-[85vh] bg-muted animate-pulse" />}>
-        <HeroBanner items={upcoming && upcoming.length > 0 ? upcoming : trending} type={MediaType.MOVIE} />
+        <HeroBanner items={bannerMedia} type={MediaType.MOVIE} />
       </Suspense>
 
       <div className="space-y-6">
