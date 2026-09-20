@@ -47,16 +47,16 @@ export default function LoginPage() {
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-purple-500/10 blur-[120px] pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in duration-700 ease-out">
-        <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 p-8 sm:p-10 rounded-3xl shadow-2xl">
+        <div className="backdrop-blur-xl bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 p-8 sm:p-10 rounded-3xl shadow-2xl">
           <div className="flex flex-col space-y-3 text-center mb-10">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Welcome back</h1>
-            <p className="text-sm text-zinc-400">Enter your credentials to access your account</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome back</h1>
+            <p className="text-sm text-muted-foreground">Enter your credentials to access your account</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
               <div className="space-y-2 relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors z-10">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors z-10">
                   <Mail className="w-5 h-5" />
                 </div>
                 <Input
@@ -69,11 +69,11 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-white/30 focus-visible:border-white/30 rounded-xl transition-all"
+                  className="pl-11 h-12 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-xl transition-all"
                 />
               </div>
               <div className="space-y-2 relative group">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors z-10">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors z-10">
                   <Lock className="w-5 h-5" />
                 </div>
                 <Input
@@ -84,13 +84,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-white/30 focus-visible:border-white/30 rounded-xl transition-all"
+                  className="pl-11 h-12 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-xl transition-all"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="text-sm text-red-400 text-center font-medium animate-in slide-in-from-top-2">
+              <p className="text-sm text-destructive text-center font-medium animate-in slide-in-from-top-2">
                 {error}
               </p>
             )}
@@ -98,7 +98,7 @@ export default function LoginPage() {
             <Button 
               type="submit" 
               disabled={loading}
-              className="w-full h-12 bg-white text-black hover:bg-zinc-200 rounded-xl font-semibold text-base transition-all flex items-center justify-center gap-2 group"
+              className="w-full h-12 bg-foreground text-background hover:bg-foreground/90 rounded-xl font-semibold text-base transition-all flex items-center justify-center gap-2 group"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -111,10 +111,10 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
-            <p className="text-sm text-zinc-400">
+          <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10 text-center">
+            <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="text-white hover:text-zinc-300 font-medium transition-colors">
+              <Link href="/signup" className="text-foreground hover:text-foreground/80 font-medium transition-colors">
                 Sign Up
               </Link>
             </p>

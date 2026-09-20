@@ -12,8 +12,8 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const { name } = body;
 
-    if (!name || typeof name !== 'string') {
-      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+    if (!name || typeof name !== 'string' || name.trim() === '') {
+      return NextResponse.json({ error: 'Name is required and cannot be empty' }, { status: 400 });
     }
 
     const updatedUser = await prisma.user.update({

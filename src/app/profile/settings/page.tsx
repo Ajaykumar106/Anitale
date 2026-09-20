@@ -64,17 +64,17 @@ export default function SettingsPage() {
   return (
     <div className="container max-w-2xl py-12 px-4 animate-in fade-in zoom-in duration-700 ease-out">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2 text-white">Profile Settings</h1>
-        <p className="text-zinc-400">Manage your account preferences and public profile.</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2 text-foreground">Profile Settings</h1>
+        <p className="text-muted-foreground">Manage your account preferences and public profile.</p>
       </div>
 
-      <div className="backdrop-blur-xl bg-white/[0.03] border border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div className="backdrop-blur-xl bg-black/5 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2 relative group">
-              <Label htmlFor="name" className="text-sm font-medium text-zinc-300">Display Name</Label>
+              <Label htmlFor="name" className="text-sm font-medium text-muted-foreground group-focus-within:text-foreground transition-colors">Display Name</Label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-white transition-colors z-10">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-colors z-10">
                   <User className="w-5 h-5" />
                 </div>
                 <Input
@@ -82,31 +82,31 @@ export default function SettingsPage() {
                   placeholder="Enter your display name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-1 focus-visible:ring-white/30 focus-visible:border-white/30 rounded-xl transition-all"
+                  className="pl-11 h-12 bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-primary focus-visible:border-primary rounded-xl transition-all"
                 />
               </div>
-              <p className="text-xs text-zinc-500">This is your public display name. It can be your real name or a pseudonym.</p>
+              <p className="text-xs text-muted-foreground">This is your public display name. It can be your real name or a pseudonym.</p>
             </div>
           </div>
 
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400 font-medium animate-in slide-in-from-top-2">
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl text-sm text-destructive font-medium animate-in slide-in-from-top-2">
               {error}
             </div>
           )}
 
           {success && (
-            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-sm text-green-400 font-medium flex items-center gap-2 animate-in slide-in-from-top-2">
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-xl text-sm text-green-600 dark:text-green-400 font-medium flex items-center gap-2 animate-in slide-in-from-top-2">
               <CheckCircle2 className="w-5 h-5" />
               Profile updated successfully
             </div>
           )}
 
-          <div className="flex justify-end pt-4 border-t border-white/10">
+          <div className="flex justify-end pt-4 border-t border-black/10 dark:border-white/10">
             <Button 
               type="submit" 
               disabled={loading} 
-              className="h-11 px-8 bg-white text-black hover:bg-zinc-200 rounded-xl font-semibold transition-all gap-2"
+              className="h-11 px-8 bg-foreground text-background hover:bg-foreground/90 rounded-xl font-semibold transition-all gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Save Changes
