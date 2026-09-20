@@ -19,6 +19,14 @@ export const revalidate = 43200;
 export default async function Home() {
   const trendingAll = await getTrendingMedia();
   const top10 = await getDiscoverMedia(MediaType.MOVIE, { top_rated: true });
+  
+  const latestMovies = await getDiscoverMedia(MediaType.MOVIE, { now_playing: true }) || [];
+  const latestSeries = await getDiscoverMedia(MediaType.SERIES, { on_the_air: true }) || [];
+  const latestUpdates = [];
+  for (let i = 0; i < 10; i++) {
+    if (latestMovies[i]) latestUpdates.push(latestMovies[i]);
+    if (latestSeries[i]) latestUpdates.push(latestSeries[i]);
+  }
 
   const renderRow = (title: string, data: any[]) => {
     if (!data || data.length === 0) return null;
@@ -51,6 +59,7 @@ export default async function Home() {
       </Suspense>
 
       <div className="space-y-6 md:space-y-10">
+        {renderRow("Latest Releases & Updates", latestUpdates)}
         <PersonalizedHomeFeeds />
 
         <Suspense fallback={

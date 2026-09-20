@@ -15,8 +15,10 @@ import { ShareButton } from './ShareButton';
 import { LiveDiscussion } from './LiveDiscussion';
 import { Star, Search } from 'lucide-react';
 import { SimilarMedia } from './SimilarMedia';
+import { VideoPlayerWrapper } from './VideoPlayerWrapper';
 
 interface MediaDetailProps {
+
   media: ProviderMediaDetails;
 }
 
@@ -53,6 +55,8 @@ export function MediaDetail({ media }: MediaDetailProps) {
         <span>/</span>
         <span className="text-foreground font-medium" aria-current="page">{media.title}</span>
       </nav>
+
+      <VideoPlayerWrapper />
 
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row gap-8">
@@ -195,21 +199,6 @@ export function MediaDetail({ media }: MediaDetailProps) {
           </div>
         )}
       </section>
-
-      {/* Trailer */}
-      {media.trailerUrl && (
-        <section>
-          <SectionHeader title="Trailer" />
-          <div className="w-full max-w-4xl mx-auto aspect-video">
-            <iframe
-              src={media.trailerUrl}
-              className="w-full h-full border-0 rounded-lg shadow-lg ring-1 ring-white/10"
-              allowFullScreen
-              allow="autoplay; encrypted-media"
-            />
-          </div>
-        </section>
-      )}
 
       {/* Live Discussion */}
       <section>

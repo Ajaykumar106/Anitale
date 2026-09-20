@@ -16,8 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     if (!media) return {};
 
     return generateSEOMetadata({
-      title: media.title,
-      description: media.overview || `Discover details about ${media.title}`,
+      title: `Watch ${media.title} Online - Anitale`,
+      description: media.overview || '',
       url: `/movie/${resolvedParams.slug}`,
       image: media.posterPath ? `https://image.tmdb.org/t/p/w1280${media.backdropPath || media.posterPath}` : undefined,
       type: 'video.movie'
