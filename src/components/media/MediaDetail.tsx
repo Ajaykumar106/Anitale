@@ -56,7 +56,8 @@ export function MediaDetail({ media }: MediaDetailProps) {
         <span className="text-foreground font-medium" aria-current="page">{media.title}</span>
       </nav>
 
-      <VideoPlayerWrapper />
+      {/* Video Player Wrapper (User will inject iframe here) */}
+      <VideoPlayerWrapper tmdbId={media.externalId} type={media.type as 'MOVIE' | 'SERIES' | 'ANIME'} />
 
       {/* Hero Section */}
       <div className="flex flex-col md:flex-row gap-8">
