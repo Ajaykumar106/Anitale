@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Server, Settings2 } from 'lucide-react';
+import { Server, Settings2, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface VideoPlayerProps {
   tmdbId: string;
@@ -12,17 +13,21 @@ interface VideoPlayerProps {
 }
 
 const SERVERS = [
-  { id: 'vidsrc-pro', name: 'Server 1 (Primary)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pro/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'superembed', name: 'Server 2 (Multi-Language)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` }, // SuperEmbed style
-  { id: '2embed', name: 'Server 3 (Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://www.2embed.cc/embed/${type === 'movie' ? id : `tv/${id}&s=${s}&e=${e}`}` },
-  { id: 'vidsrc-to', name: 'Server 4 (VidSrc)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.to/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` }
+  { id: 'vidsrc-pro', name: 'Server 1 (Primary HD)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pro/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'superembed', name: 'Server 2 (Hindi & Multi-Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
+  { id: 'vidsrc-me', name: 'Server 3 (Multi-Language)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.me/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
+  { id: '2embed', name: 'Server 4 (Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://www.2embed.cc/embed/${type === 'movie' ? id : `tv/${id}&s=${s}&e=${e}`}` }
 ];
 
 export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlayerProps) {
   const [activeServer, setActiveServer] = useState(SERVERS[0]);
+  const [isLoading, setIsLoading] = useState(true);
   const mediaType = type === 'SERIES' || type === 'ANIME' ? 'tv' : 'movie';
   
-  // Show a message if it's a series but no episode is selected yet.
+  // Reset loading state when server or episode changes
+  React.useEffect(() => {
+    setIsLoading(true);
+  }, [activeServer, tmdbId, season, episode]);
   if (mediaType === 'tv' && (!season || !episode)) {
     return (
       <div className="w-full max-w-6xl mx-auto mb-8 mt-4 aspect-video bg-slate-900 rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10 flex flex-col items-center justify-center relative">
@@ -36,7 +41,7 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
   const iframeSrc = activeServer.url(mediaType, tmdbId, season, episode);
 
   return (
-    <div className="w-full max-w-6xl mx-auto mb-8 mt-4 flex flex-col gap-2">
+    <div className="w-full max-w-6xl mx-auto mb-8 mt-4 flex flex-col gap-2 animate-in fade-in duration-700">
       <div className="flex flex-wrap items-center justify-between gap-4 bg-zinc-900/50 p-2 sm:p-3 rounded-lg border border-white/5 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground ml-2">
           <Settings2 className="w-4 h-4" /> 
@@ -49,8 +54,17 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
               key={server.id}
               variant={activeServer.id === server.id ? 'default' : 'secondary'}
               size="sm"
-              onClick={() => setActiveServer(server)}
-              className={activeServer.id === server.id ? 'bg-primary text-primary-foreground' : 'bg-zinc-800 hover:bg-zinc-700'}
+              onClick={() => {
+                if (activeServer.id !== server.id) {
+                  setActiveServer(server);
+                }
+              }}
+              className={cn(
+                "transition-all duration-300 ease-out",
+                activeServer.id === server.id 
+                  ? 'bg-primary text-primary-foreground shadow-[0_0_15px_rgba(var(--primary),0.5)]' 
+                  : 'bg-zinc-800 hover:bg-zinc-700 hover:scale-105'
+              )}
             >
               {server.name}
             </Button>
@@ -58,16 +72,25 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
         </div>
       </div>
       <div className="w-full aspect-video bg-black rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10 flex items-center justify-center relative group">
-        {/* Loading placeholder text behind the iframe */}
-        <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-sm z-0">
-          Loading video player...
-        </div>
+        {/* Apple-style smooth loading state */}
+        {isLoading && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-500">
+            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
+            <p className="text-sm font-medium text-white/70 animate-pulse tracking-wide">
+              Connecting to {activeServer.name}...
+            </p>
+          </div>
+        )}
         <iframe 
           src={iframeSrc} 
-          className="w-full h-full border-0 z-10 relative bg-black" 
+          className={cn(
+            "w-full h-full border-0 z-10 relative bg-black transition-opacity duration-700 ease-in-out",
+            isLoading ? "opacity-0" : "opacity-100"
+          )}
           allowFullScreen 
           title="Video Player"
           sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+          onLoad={() => setIsLoading(false)}
         />
       </div>
     </div>

@@ -85,7 +85,7 @@ export function EpisodeSelector({ tmdbId, type, seasons }: EpisodeSelectorProps)
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         ) : episodes.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-4 animate-in slide-in-from-bottom-4 fade-in duration-700 ease-out">
             {episodes.map((episode) => {
               const isSelected = selectedEpisode?.episodeNumber === episode.episodeNumber;
               return (
@@ -93,8 +93,8 @@ export function EpisodeSelector({ tmdbId, type, seasons }: EpisodeSelectorProps)
                   key={episode.id}
                   onClick={() => setSelectedEpisode(episode)}
                   className={cn(
-                    "flex gap-4 p-3 rounded-lg border border-white/5 bg-zinc-900/40 hover:bg-zinc-800/80 transition-colors cursor-pointer group",
-                    isSelected ? "ring-2 ring-primary bg-zinc-800/80" : ""
+                    "flex gap-4 p-3 rounded-xl border border-white/5 bg-zinc-900/40 hover:bg-zinc-800/80 transition-all duration-300 ease-out cursor-pointer group hover:scale-[1.01] hover:shadow-lg",
+                    isSelected ? "ring-2 ring-primary bg-zinc-800/80 shadow-[0_0_15px_rgba(var(--primary),0.2)]" : ""
                   )}
                 >
                   <div className="relative w-32 md:w-48 aspect-video rounded-md overflow-hidden bg-zinc-800 shrink-0 border border-white/10">

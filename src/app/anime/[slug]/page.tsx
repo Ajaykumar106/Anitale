@@ -61,6 +61,7 @@ export default async function AnimePage({
       runtime: media.runtime || undefined,
       genres: (media as any).genres.map((g: any) => g.genre.name),
       alternativeTitles: (media as any).alternativeTitles.map((a: any) => ({ title: a.title, language: a.language || '' })),
+      seasons: (media as any).seasons || [],
       availability: availability,
       trailerUrl: trailerUrl || undefined,
       credits: (media as any).credits,
