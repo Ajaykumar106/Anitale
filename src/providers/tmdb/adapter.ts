@@ -90,7 +90,7 @@ export class TMDBAdapter implements MetadataProvider {
     const parsed = TMDBSearchResponseSchema.parse(data);
 
     return parsed.results
-      .filter(item => item.media_type !== 'person') // Filter out actors
+      .filter(item => item.media_type !== 'person' && item.poster_path) // Filter out actors
       .map(item => ({
         externalId: item.id.toString(),
         type: (item.media_type === 'tv' || options?.type === 'SERIES') ? MediaType.SERIES : MediaType.MOVIE,
@@ -112,7 +112,7 @@ export class TMDBAdapter implements MetadataProvider {
     const parsed = TMDBSearchResponseSchema.parse(data);
 
     return parsed.results
-      .filter(item => item.media_type !== 'person')
+      .filter(item => item.media_type !== 'person' && item.poster_path)
       .map(item => ({
         externalId: item.id.toString(),
         type: type || (item.media_type === 'tv' ? MediaType.SERIES : MediaType.MOVIE),
@@ -171,7 +171,7 @@ export class TMDBAdapter implements MetadataProvider {
     const parsed = TMDBSearchResponseSchema.parse(data);
 
     return parsed.results
-      .filter(item => item.media_type !== 'person')
+      .filter(item => item.media_type !== 'person' && item.poster_path)
       .map(item => ({
         externalId: item.id.toString(),
         type: type,
@@ -284,7 +284,7 @@ export class TMDBAdapter implements MetadataProvider {
       const parsed = TMDBSearchResponseSchema.parse(data);
 
       return parsed.results
-        .filter(item => item.media_type !== 'person')
+        .filter(item => item.media_type !== 'person' && item.poster_path)
         .map(item => ({
           externalId: item.id.toString(),
           type: type,

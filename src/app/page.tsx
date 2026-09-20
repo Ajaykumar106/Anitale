@@ -28,11 +28,11 @@ export default async function Home() {
     if (latestSeries[i]) latestUpdates.push(latestSeries[i]);
   }
 
-  const renderRow = (title: string, data: any[]) => {
+  const renderRow = (title: string, data: any[], href?: string) => {
     if (!data || data.length === 0) return null;
     return (
       <section>
-        <SectionHeader title={title} />
+        <SectionHeader title={title} href={href} linkText="View All" />
         <MediaRow>
           {data.map((media, index) => (
             <div key={`${title}-${media.type}-${media.externalId}-${index}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
@@ -59,7 +59,7 @@ export default async function Home() {
       </Suspense>
 
       <div className="space-y-6 md:space-y-10">
-        {renderRow("Latest Releases & Updates", latestUpdates)}
+        {renderRow("Latest Releases & Updates", latestUpdates, "/releases")}
         <PersonalizedHomeFeeds />
 
         <Suspense fallback={
@@ -77,7 +77,7 @@ export default async function Home() {
           <TrendingSections />
         </Suspense>
         
-        {renderRow("Top 10 Today", top10)}
+        {renderRow("Top 10 Today", top10, "/movie")}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { MediaType } from '@prisma/client';
-import { getMediaDetails, getMediaAvailability } from '@/services/media/details';
+import { getMediaDetails, getMediaAvailability, getMediaTrailer } from '@/services/media/details';
 import { MediaDetail } from '@/components/media/MediaDetail';
 import { notFound } from 'next/navigation';
 
@@ -46,6 +46,7 @@ export default async function MoviePage({
     if (!media) notFound();
 
     const availability = await getMediaAvailability(media.externalId, MediaType.MOVIE);
+    const trailerUrl = await getMediaTrailer(media.externalId, MediaType.MOVIE);
 
     mappedMedia = {
       id: (media as any).id,
@@ -62,7 +63,7 @@ export default async function MoviePage({
       genres: (media as any).genres.map((g: any) => g.genre.name),
       alternativeTitles: (media as any).alternativeTitles.map((a: any) => ({ title: a.title, language: a.language || '' })),
       availability: availability,
-      trailerUrl: undefined,
+      trailerUrl: trailerUrl || undefined,
       credits: (media as any).credits,
       voteAverage: (media as any).voteAverage,
     };

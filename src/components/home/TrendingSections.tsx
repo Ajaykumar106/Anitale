@@ -45,7 +45,7 @@ export async function TrendingSections() {
 
       {trendingMovies.length > 0 && (
         <section>
-          <SectionHeader title="Popular Movies" href="/movie" linkText="All movies" />
+          <SectionHeader title="Popular Movies" href="/movie" linkText="View All" />
           <MediaRow>
             {trendingMovies.map((media) => (
               <div key={`movie-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">
@@ -64,7 +64,7 @@ export async function TrendingSections() {
 
       {trendingSeries.length > 0 && (
         <section>
-          <SectionHeader title="Popular Series" href="/show" linkText="All series" />
+          <SectionHeader title="Popular Series" href="/show" linkText="View All" />
           <MediaRow>
             {trendingSeries.map((media) => (
               <div key={`series-${media.externalId}`} className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] flex-none">

@@ -196,6 +196,11 @@ export function MediaDetail({ media }: MediaDetailProps) {
                   <Search className="w-4 h-4" /> Web Search
                 </Button>
               </a>
+              <a href={`https://www.google.com/search?q=${encodeURIComponent(media.title + ' cast and release info')}`} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="gap-2">
+                  <Search className="w-4 h-4" /> Search Cast & Info
+                </Button>
+              </a>
             </div>
           </div>
         )}
@@ -223,6 +228,21 @@ export function MediaDetail({ media }: MediaDetailProps) {
           <div className="text-muted-foreground italic">Reviews are unavailable.</div>
         )}
       </section>
+
+      {/* Trailers Section */}
+      {media.trailerUrl && (
+        <section className="space-y-4">
+          <SectionHeader title="Trailers" />
+          <div className="aspect-video w-full max-w-4xl rounded-xl overflow-hidden shadow-lg border border-white/10">
+            <iframe 
+              src={media.trailerUrl} 
+              className="w-full h-full" 
+              allowFullScreen 
+              title={`${media.title} Trailer`}
+            />
+          </div>
+        </section>
+      )}
 
       {/* Similar & Recommended */}
       <Suspense fallback={<div className="animate-pulse h-48 bg-muted rounded-md" />}>
