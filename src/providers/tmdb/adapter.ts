@@ -164,7 +164,14 @@ export class TMDBAdapter implements MetadataProvider {
     }
 
     const query = params.toString();
-    const finalEndpoint = query ? (endpoint.includes('?') ? `${endpoint}&${query}${extraQuery}` : `${endpoint}?${query}${extraQuery}`) : endpoint + extraQuery;
+    
+    let finalEndpoint = endpoint;
+    if (query) {
+      finalEndpoint += endpoint.includes('?') ? `&${query}` : `?${query}`;
+    }
+    if (extraQuery) {
+      finalEndpoint += finalEndpoint.includes('?') ? (extraQuery.startsWith('&') ? extraQuery : `&${extraQuery}`) : (extraQuery.startsWith('&') ? `?${extraQuery.slice(1)}` : `?${extraQuery}`);
+    }
 
     const response = await this.fetchWithRetry(finalEndpoint);
     const data = await response.json();
@@ -219,7 +226,7 @@ export class TMDBAdapter implements MetadataProvider {
         releaseDate: (data.release_date || data.first_air_date) ? new Date(data.release_date || data.first_air_date) : undefined,
         status: data.status,
         runtime: data.runtime || (data.episode_run_time?.[0]),
-        genres: (data.genres || []).map((g: { name: string }) => ({ genre: { name: g.name } })),
+        genres: (data.genres || []).map((g: { name: string }) => g.name),
         alternativeTitles: [], // Left empty for simplicity unless appending /alternative_titles
         trailerUrl,
         voteAverage: data.vote_average,
