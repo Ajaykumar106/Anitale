@@ -56,6 +56,18 @@ export default async function ProfilePage() {
         </div>
         
         <FriendsList />
+
+        <div className="pt-6 border-t space-y-4">
+          <h3 className="font-medium text-lg mb-2">Quick Links</h3>
+          <div className="flex flex-col gap-2">
+            <Link href="/profile/settings" className="w-full text-left p-3 rounded-md bg-secondary/50 hover:bg-secondary transition-colors font-medium flex items-center justify-between">
+              Account Settings <span className="text-muted-foreground">→</span>
+            </Link>
+            <Link href="/feedback" className="w-full text-left p-3 rounded-md bg-secondary/50 hover:bg-secondary transition-colors font-medium flex items-center justify-between">
+              Help & Support <span className="text-muted-foreground">→</span>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );

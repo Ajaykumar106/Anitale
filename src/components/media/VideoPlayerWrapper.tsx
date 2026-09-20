@@ -16,10 +16,10 @@ interface VideoPlayerProps {
 }
 
 const SERVERS = [
-  { id: 'vidsrc-in', name: 'Server 1 (Primary - DNS Bypass)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.in/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
-  { id: 'vidsrc-pm', name: 'Server 2 (Fast Alternative)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pm/embed/${type}?tmdb=${id}${s && e ? `&season=${s}&episode=${e}` : ''}` },
-  { id: 'vidsrc-cc', name: 'Server 3 (HD Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.cc/v2/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'autoembed', name: 'Server 4 (AutoEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://tom.autoembed.cc/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-in', name: 'Server 1 (Primary - DNS Bypass)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.in/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-pm', name: 'Server 2 (Fast Alternative)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pm/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-xyz', name: 'Server 3 (HD Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.xyz/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-net', name: 'Server 4 (AutoEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.net/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
   { id: 'superembed', name: 'Server 5 (Hindi/Multi-Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
 ];
 
@@ -131,7 +131,6 @@ export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onN
             className={cn("w-full h-full border-0 transition-opacity duration-1000", isLoading ? "opacity-0" : "opacity-100")} 
             allowFullScreen 
             title="Video Player"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
             onLoad={() => setIsLoading(false)}
           />
           {onNextEpisode && (

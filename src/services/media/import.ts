@@ -37,7 +37,10 @@ export async function importMedia(data: ProviderMediaDetails) {
 
   // Handle Genres
   if (data.genres && data.genres.length > 0) {
-    for (const genreName of data.genres) {
+    for (const g of data.genres) {
+      const genreName = typeof g === 'string' ? g : (g as any)?.genre?.name || (g as any)?.name;
+      if (!genreName || typeof genreName !== 'string') continue;
+      
       const genre = await prisma.genre.upsert({
         where: { name: genreName },
         update: {},

@@ -29,8 +29,9 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
 
     // If we have a recent local copy, return it
     if (localMedia) {
+      const isSeriesMissingSeasons = (type === 'SERIES' || type === 'ANIME') && localMedia.seasons.length === 0;
       const ageMs = Date.now() - localMedia.updatedAt.getTime();
-      if (ageMs < CACHE_TTL_MS) {
+      if (ageMs < CACHE_TTL_MS && !isSeriesMissingSeasons) {
         // Map local DB format to expected frontend format
         return {
           ...localMedia,
@@ -94,7 +95,8 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
       return dbMedia ? {
         ...dbMedia,
         credits: providerData.credits,
-        voteAverage: providerData.voteAverage
+        voteAverage: providerData.voteAverage,
+        seasons: providerData.seasons || dbMedia.seasons
       } : providerData as any;
     } catch (importError) {
       // DB is down, just return the mapped provider data directly so the UI doesn't crash
