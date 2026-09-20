@@ -28,6 +28,18 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
   React.useEffect(() => {
     setIsLoading(true);
   }, [activeServer, tmdbId, season, episode]);
+
+  // Read preferred language from localStorage on mount
+  React.useEffect(() => {
+    try {
+      const prefLang = localStorage.getItem('preferredLanguage');
+      if (prefLang === 'Hindi') {
+        // Auto-select Server 2 (Hindi/Multi-Audio)
+        setActiveServer(SERVERS[1]);
+      }
+    } catch (e) {}
+  }, []);
+
   if (mediaType === 'tv' && (!season || !episode)) {
     return (
       <div className="w-full max-w-6xl mx-auto mb-8 mt-4 aspect-video bg-slate-900 rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10 flex flex-col items-center justify-center relative">
@@ -89,7 +101,6 @@ export function VideoPlayerWrapper({ tmdbId, type, season, episode }: VideoPlaye
           )}
           allowFullScreen 
           title="Video Player"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
           onLoad={() => setIsLoading(false)}
         />
       </div>
