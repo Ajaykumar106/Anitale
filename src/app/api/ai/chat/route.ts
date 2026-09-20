@@ -1,5 +1,7 @@
 import { neon } from '@neon/ai-sdk-provider';
 import { streamText } from 'ai';
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const maxDuration = 30; // 30 seconds
 
@@ -18,11 +20,29 @@ export async function POST(req: Request) {
       );
     }
 
+    // Fetch user context for personalization
+    const session = await auth();
+    let watchContext = "";
+    
+    if (session?.user?.id) {
+      const recentWatches = await prisma.watchProgress.findMany({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: 'desc' },
+        take: 5,
+        include: { media: true }
+      });
+      
+      if (recentWatches.length > 0) {
+        const titles = recentWatches.map(w => `${w.media.title} (${w.media.type})`).join(', ');
+        watchContext = `\n\nUSER CONTEXT:\nThe user has recently been watching: ${titles}. Use this information to tailor your recommendations to their tastes if they ask for suggestions!`;
+      }
+    }
+
     const result = streamText({
       model: neon("claude-sonnet-4-6"), // Using a great model for recommendations
       system: `You are the "Anime Sommelier" on Anitale, a premium anime/movie streaming platform. 
       Your job is to recommend anime, movies, and TV series based on the user's prompt. 
-      Keep your responses concise, friendly, and formatted nicely. Only talk about media (movies, shows, anime).`,
+      Keep your responses concise, friendly, and formatted nicely. Only talk about media (movies, shows, anime).${watchContext}`,
       messages,
     });
 

@@ -8,9 +8,9 @@ import { Bot, X, Send, Sparkles, Loader2 } from 'lucide-react';
 
 export function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading } = (useChat as any)({
     api: '/api/ai/chat',
-  } as any);
+  });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 

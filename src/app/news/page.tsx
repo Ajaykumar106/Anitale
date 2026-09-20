@@ -1,5 +1,5 @@
 import { SectionHeader } from '@/components/media/SectionHeader';
-import Link from 'next/link';
+import Parser from 'rss-parser';
 
 export const metadata = {
   title: 'News - Anitale',
@@ -8,14 +8,22 @@ export const metadata = {
 
 export const revalidate = 3600; // 1 hour
 
+// Initialize RSS Parser
+const parser = new Parser({
+  customFields: {
+    item: [
+      ['media:content', 'mediaContent'],
+      ['content:encoded', 'contentEncoded']
+    ]
+  }
+});
+
 async function fetchRss(url: string) {
   try {
-    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`, { next: { revalidate: 3600 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.items || [];
+    const feed = await parser.parseURL(url);
+    return feed.items || [];
   } catch (err) {
-    console.error(err);
+    console.error('RSS Fetch Error for', url, err);
     return [];
   }
 }
@@ -37,21 +45,30 @@ export default async function NewsPage() {
         </div>
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {items.slice(0, 6).map((item, idx) => {
-            const imageUrl = item.thumbnail || item.enclosure?.link || 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80';
-            const date = new Date(item.pubDate.replace(/-/g, '/')).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
+            // Extract image from various possible XML tags
+            let imageUrl = 'https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=80';
+            
+            // Try to extract from contentEncoded (ScreenRant often puts <img> there)
+            if (item.contentEncoded) {
+              const match = item.contentEncoded.match(/<img[^>]+src="([^">]+)"/);
+              if (match) imageUrl = match[1];
+            }
+            // Try mediaContent
+            if (item.mediaContent && item.mediaContent['$'] && item.mediaContent['$'].url) {
+              imageUrl = item.mediaContent['$'].url;
+            }
+            // Try AnimeNewsNetwork description 
+            if (item.content) {
+               const match = item.content.match(/<img[^>]+src="([^">]+)"/);
+               if (match) imageUrl = match[1];
+            }
+
+            const date = new Date(item.pubDate || new Date()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
             // Clean up description HTML
-            const decodeHtml = (html: string) => {
-              return html
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&quot;/g, '"')
-                .replace(/&#39;/g, "'")
-                .replace(/&#039;/g, "'")
-                .replace(/&nbsp;/g, ' ');
-            };
-            const rawText = item.description.replace(/<[^>]+>/g, ' ');
-            const cleanSnippet = decodeHtml(rawText).trim().replace(/\s+/g, ' ').slice(0, 150) + '...';
+            const rawText = (item.contentSnippet || item.content || '').replace(/<[^>]+>/g, ' ');
+            const cleanSnippet = rawText.trim().replace(/\s+/g, ' ').slice(0, 150) + '...';
             
             return (
               <a key={idx} href={item.link} target="_blank" rel="noopener noreferrer" className="group flex flex-col border border-white/5 rounded-3xl overflow-hidden bg-zinc-950/40 hover:bg-zinc-900/80 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 backdrop-blur-sm">
