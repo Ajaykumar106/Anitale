@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { SearchBar } from '@/components/search/SearchBar';
 import { auth } from '@/lib/auth';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { Search } from 'lucide-react';
 
 export async function Navbar() {
   const session = await auth();
@@ -28,6 +29,14 @@ export async function Navbar() {
             <Suspense fallback={<div className="h-10 w-full rounded-md bg-muted animate-pulse max-w-xl" />}>
               <SearchBar />
             </Suspense>
+          </div>
+          
+          {/* Mobile Search Icon */}
+          <div className="flex md:hidden mr-2">
+            <Link href="/search" className="p-2 text-muted-foreground hover:text-foreground">
+              <Search className="h-5 w-5" />
+              <span className="sr-only">Search</span>
+            </Link>
           </div>
           
           {/* Desktop Right Nav */}
