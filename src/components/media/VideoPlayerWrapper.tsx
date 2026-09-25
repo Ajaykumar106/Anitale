@@ -16,9 +16,13 @@ interface VideoPlayerProps {
 }
 
 const SERVERS = [
-  { id: 'vidlink', name: 'Server 1 (Primary - Ultra HD)', url: (type: string, id: string, s?: number, e?: number) => `https://vidlink.pro/${type === 'tv' ? 'tv' : 'movie'}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'embedsu', name: 'Server 2 (Multi-Audio & Subs)', url: (type: string, id: string, s?: number, e?: number) => `https://embed.su/embed/${type === 'tv' ? 'tv' : 'movie'}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'vidsrc-net', name: 'Server 3 (Fast AutoEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.net/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-net', name: 'Server 1 (Vidsrc Net)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.net/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-pm', name: 'Server 2 (Vidsrc PM)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pm/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-xyz', name: 'Server 3 (Vidsrc XYZ)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.xyz/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-cc', name: 'Server 4 (Vidsrc CC)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.cc/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'superembed', name: 'Server 5 (SuperEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
+  { id: 'vidlink', name: 'Server 6 (VidLink)', url: (type: string, id: string, s?: number, e?: number) => `https://vidlink.pro/${type === 'tv' ? 'tv' : 'movie'}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'embedsu', name: 'Server 7 (EmbedSU)', url: (type: string, id: string, s?: number, e?: number) => `https://embed.su/embed/${type === 'tv' ? 'tv' : 'movie'}/${id}${s && e ? `/${s}/${e}` : ''}` },
 ];
 
 export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onNextEpisode }: VideoPlayerProps) {
@@ -114,20 +118,23 @@ export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onN
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-zinc-900 border-zinc-800 text-muted-foreground hover:text-white h-9 rounded-lg px-3 flex-1 sm:flex-none">
+              <Button variant="outline" size="sm" className="bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:text-primary h-9 rounded-lg px-4 flex-1 sm:flex-none font-bold shadow-lg shadow-primary/5">
                 <Settings className="w-4 h-4 mr-2" />
                 Change Server
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-zinc-950 border-zinc-800 text-white p-2">
-              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+            <DropdownMenuContent align="end" className="w-64 bg-zinc-950 border-zinc-800 text-white p-2 shadow-2xl">
+              <div className="px-2 py-2 text-xs font-semibold text-red-400 uppercase tracking-wider mb-1 bg-red-500/10 rounded-md border border-red-500/20">
+                If video doesn't play, try another server!
+              </div>
+              <div className="px-2 py-1.5 text-[10px] text-muted-foreground uppercase tracking-wider mb-1 mt-2">
                 Available Servers
               </div>
               {SERVERS.map(s => (
                 <DropdownMenuItem 
                   key={s.id} 
                   onClick={() => setActiveServer(s)}
-                  className={cn("rounded-md cursor-pointer my-0.5", activeServer.id === s.id && "bg-primary/20 text-primary focus:bg-primary/30 focus:text-primary")}
+                  className={cn("rounded-md cursor-pointer my-0.5", activeServer.id === s.id && "bg-primary text-primary-foreground focus:bg-primary focus:text-primary-foreground")}
                 >
                   <Server className="w-4 h-4 mr-2 opacity-70" />
                   {s.name}
