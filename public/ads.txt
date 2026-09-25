@@ -1,0 +1,4 @@
+# Placeholder for AdSense ads.txt
+# When your AdSense account is approved, Google will provide you with a string of text to place here.
+# It usually looks like this:
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

@@ -69,35 +69,43 @@ export const getMediaDetails = cache(async (externalId: string, type: MediaType)
       return localMedia; // Return stale cache if provider fails gracefully
     }
 
-    // Try to cache it, but don't fail if DB is offline
+    // Run DB caching in the background so we don't block the user from seeing the page
     try {
-      await importMedia(providerData);
-      const dbMedia = await prisma.media.findUnique({
-        where: { externalId_type: { externalId, type } },
-        include: {
-          genres: { include: { genre: true } },
-          alternativeTitles: true,
-          cast: { include: { person: true } },
-          crew: { include: { person: true } },
-          seasons: { include: { episodes: true } },
-          availability: { include: { provider: true } },
+      importMedia(providerData).then(async (importedMedia) => {
+        if (importedMedia && providerData.voteAverage) {
+          await prisma.media.update({
+            where: { id: importedMedia.id },
+            data: { 
+              voteAverage: providerData.voteAverage,
+              voteCount: providerData.voteCount || 0
+            }
+          });
         }
-      });
-      if (dbMedia && providerData.voteAverage) {
-        await prisma.media.update({
-          where: { id: dbMedia.id },
-          data: { 
-            voteAverage: providerData.voteAverage,
-            voteCount: providerData.voteCount || 0
-          }
-        });
-      }
-      return dbMedia ? {
-        ...dbMedia,
-        credits: providerData.credits,
-        voteAverage: providerData.voteAverage,
-        seasons: providerData.seasons || dbMedia.seasons
-      } : providerData as any;
+      }).catch(err => console.error("Background import failed:", err));
+
+      // Instantly return the provider data formatted like the DB would
+      return {
+        id: 'temp-id',
+        externalId: providerData.externalId,
+        type: providerData.type,
+        title: providerData.title,
+        originalTitle: providerData.originalTitle || null,
+        overview: providerData.overview || null,
+        posterPath: providerData.posterPath || null,
+        backdropPath: providerData.backdropPath || null,
+        releaseDate: providerData.releaseDate || null,
+        status: providerData.status || null,
+        runtime: providerData.runtime || null,
+        genres: providerData.genres?.map(g => ({ genre: { name: (g as any)?.name || g } })) || [],
+        alternativeTitles: [],
+        cast: [],
+        crew: [],
+        seasons: providerData.seasons || [],
+        availability: [],
+        credits: providerData.credits || { cast: [], crew: [] },
+        voteAverage: providerData.voteAverage || 0,
+        voteCount: providerData.voteCount || 0
+      } as any;
     } catch (importError) {
       // DB is down, just return the mapped provider data directly so the UI doesn't crash
       return {

@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Server, Settings2, Loader2, Play } from 'lucide-react';
+import { Server, Settings2, Loader2, Play, AudioLines, Subtitles, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface VideoPlayerProps {
   tmdbId: string;
@@ -16,11 +16,9 @@ interface VideoPlayerProps {
 }
 
 const SERVERS = [
-  { id: 'vidsrc-in', name: 'Server 1 (Primary - DNS Bypass)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.in/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'vidsrc-pm', name: 'Server 2 (Fast Alternative)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.pm/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'vidsrc-xyz', name: 'Server 3 (HD Backup)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.xyz/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'vidsrc-net', name: 'Server 4 (AutoEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.net/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
-  { id: 'superembed', name: 'Server 5 (Hindi/Multi-Audio)', url: (type: string, id: string, s?: number, e?: number) => `https://multiembed.mov/?video_id=${id}&tmdb=1` },
+  { id: 'vidlink', name: 'Server 1 (Primary - Ultra HD)', url: (type: string, id: string, s?: number, e?: number) => `https://vidlink.pro/${type === 'tv' ? 'tv' : 'movie'}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'embedsu', name: 'Server 2 (Multi-Audio & Subs)', url: (type: string, id: string, s?: number, e?: number) => `https://embed.su/embed/${type === 'tv' ? 'tv' : 'movie'}/${id}${s && e ? `/${s}/${e}` : ''}` },
+  { id: 'vidsrc-net', name: 'Server 3 (Fast AutoEmbed)', url: (type: string, id: string, s?: number, e?: number) => `https://vidsrc.net/embed/${type}/${id}${s && e ? `/${s}/${e}` : ''}` },
 ];
 
 export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onNextEpisode }: VideoPlayerProps) {
@@ -44,35 +42,18 @@ export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onN
     }
   }, [mediaId, season, episode]);
 
-  // Read preferred language from localStorage on mount safely
-  React.useEffect(() => {
-    try {
-      const prefLang = localStorage.getItem('preferredLanguage');
-      if (prefLang === 'Hindi') {
-        setActiveServer(SERVERS[3]); // Server 4 is Hindi
-      }
-    } catch (e) {
-      // Ignored for incognito strict modes
-    }
-  }, []);
-
-  // Keyboard shortcuts
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.shiftKey && e.key.toLowerCase() === 'n' && onNextEpisode) {
-        onNextEpisode();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onNextEpisode]);
-
   if (mediaType === 'tv' && (!season || !episode)) {
     return (
-      <div className="w-full max-w-6xl mx-auto mb-8 mt-4 aspect-video bg-slate-900 rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10 flex flex-col items-center justify-center relative">
-        <Server className="w-12 h-12 text-muted-foreground mb-4" />
-        <h3 className="text-xl font-bold text-white">Select an Episode</h3>
-        <p className="text-muted-foreground">Please select a season and episode below to start watching.</p>
+      <div className="w-full aspect-video bg-zinc-900 rounded-xl flex items-center justify-center border border-white/10 shadow-2xl animate-in fade-in duration-700">
+        <div className="flex flex-col items-center gap-4 text-center px-4">
+          <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center">
+            <Play className="w-8 h-8 text-muted-foreground ml-1" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white mb-2">Select an Episode</h3>
+            <p className="text-muted-foreground max-w-sm">Please select a season and episode below to start watching.</p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -80,68 +61,92 @@ export function VideoPlayerWrapper({ tmdbId, mediaId, type, season, episode, onN
   const iframeSrc = activeServer.url(mediaType, tmdbId, season, episode);
 
   return (
-    <div className="w-full max-w-6xl mx-auto mb-8 mt-4 flex flex-col gap-2 animate-in fade-in duration-700">
-      <div className="w-full aspect-video bg-black rounded-xl shadow-2xl overflow-hidden ring-1 ring-white/10 flex items-center justify-center relative group">
+    <div className="flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-700">
+      <div className="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
         
-        {/* Top Bar for Server Selection */}
-        <div className="absolute top-0 left-0 right-0 h-14 bg-gradient-to-b from-black/80 to-transparent z-40 flex justify-between items-center px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="flex items-center gap-2">
-            <Play className="w-5 h-5 text-primary" />
-            <span className="font-semibold text-white/90 text-sm hidden sm:inline-block">Now Playing</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Select 
-              value={activeServer.id} 
-              onValueChange={(val) => {
-                const server = SERVERS.find(s => s.id === val);
-                if (server) setActiveServer(server);
-              }}
-            >
-              <SelectTrigger className="h-8 w-[200px] bg-black/50 border-white/10 text-xs text-white backdrop-blur-md hover:bg-black/80 transition-colors">
-                <div className="flex items-center gap-2">
-                  <Server className="w-3 h-3 text-primary" />
-                  <SelectValue placeholder="Select Server" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-white/10">
-                {SERVERS.map(s => (
-                  <SelectItem key={s.id} value={s.id} className="text-xs">
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Minimalist Top Bar (Hidden by default, shows on hover) */}
+        <div className="absolute top-0 inset-x-0 h-16 bg-gradient-to-b from-black/80 to-transparent z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none flex justify-between items-start px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="font-semibold text-white/90 text-sm drop-shadow-md">Anitale Player</span>
           </div>
         </div>
 
+        {/* Loading State Overlay */}
         <div className="absolute inset-0 z-10 pointer-events-none">
           {isLoading && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/95 backdrop-blur-sm">
-              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
-              <div className="text-white font-medium tracking-wide">Loading Media Engine...</div>
-              <div className="text-muted-foreground text-sm mt-2">Connecting to {activeServer.name}</div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md">
+              <Loader2 className="w-12 h-12 text-primary animate-spin mb-4 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+              <div className="text-white text-lg font-bold tracking-wide">Loading Secure Stream...</div>
+              <div className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin"></span>
+                Optimizing playback quality
+              </div>
             </div>
           )}
         </div>
 
+        {/* The Actual Video Iframe */}
         <div className="relative w-full h-full z-20">
           <iframe 
             src={iframeSrc} 
-            className={cn("w-full h-full border-0 transition-opacity duration-1000", isLoading ? "opacity-0" : "opacity-100")} 
+            className={cn("w-full h-full border-0 transition-opacity duration-1000", isLoading ? "opacity-0 scale-105" : "opacity-100 scale-100")} 
             allowFullScreen 
             title="Video Player"
             onLoad={() => setIsLoading(false)}
           />
+        </div>
+      </div>
+
+      {/* Control Bar Below Player */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-2 py-1">
+        <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <AudioLines className="w-4 h-4 text-green-500" />
+            <span className="font-medium text-white/90">Multi-Audio (EN, HI, JP)</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Subtitles className="w-4 h-4 text-yellow-500" />
+            <span className="font-medium text-white/90">Subtitles Available</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-zinc-900 border-zinc-800 text-muted-foreground hover:text-white h-9 rounded-lg px-3 flex-1 sm:flex-none">
+                <Settings className="w-4 h-4 mr-2" />
+                Change Server
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56 bg-zinc-950 border-zinc-800 text-white p-2">
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Available Servers
+              </div>
+              {SERVERS.map(s => (
+                <DropdownMenuItem 
+                  key={s.id} 
+                  onClick={() => setActiveServer(s)}
+                  className={cn("rounded-md cursor-pointer my-0.5", activeServer.id === s.id && "bg-primary/20 text-primary focus:bg-primary/30 focus:text-primary")}
+                >
+                  <Server className="w-4 h-4 mr-2 opacity-70" />
+                  {s.name}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {onNextEpisode && (
             <Button 
               onClick={() => {
                 try { if (navigator.vibrate) navigator.vibrate([50]); } catch (e) {}
                 onNextEpisode();
               }}
-              className="absolute bottom-4 right-4 z-30 bg-primary hover:bg-primary/90 text-white shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 active:scale-95"
+              variant="default" 
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-9 px-6 rounded-lg shadow-lg shadow-primary/20 flex-1 sm:flex-none active:scale-95 transition-transform"
             >
-              Next Episode (Shift + N)
+              Next Episode 
+              <Play className="w-4 h-4 ml-2 fill-current" />
             </Button>
           )}
         </div>

@@ -23,9 +23,9 @@ export async function TrendingSections() {
   }
 
   return (
-    <>
+    <div className="space-y-6 md:space-y-12">
       {trendingAll.length > 0 && (
-        <section>
+        <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both" style={{ animationDelay: '100ms' }}>
           <SectionHeader title="Trending Now" />
           <MediaRow>
             {trendingAll.map((media) => (
@@ -44,7 +44,7 @@ export async function TrendingSections() {
       )}
 
       {trendingMovies.length > 0 && (
-        <section>
+        <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both" style={{ animationDelay: '200ms' }}>
           <SectionHeader title="Popular Movies" href="/movie" linkText="View All" />
           <MediaRow>
             {trendingMovies.map((media) => (
@@ -63,7 +63,7 @@ export async function TrendingSections() {
       )}
 
       {trendingSeries.length > 0 && (
-        <section>
+        <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both" style={{ animationDelay: '300ms' }}>
           <SectionHeader title="Popular Series" href="/show" linkText="View All" />
           <MediaRow>
             {trendingSeries.map((media) => (
@@ -80,6 +80,6 @@ export async function TrendingSections() {
           </MediaRow>
         </section>
       )}
-    </>
+    </div>
   );
 }

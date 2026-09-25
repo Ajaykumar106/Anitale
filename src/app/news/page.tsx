@@ -32,7 +32,7 @@ export default async function NewsPage() {
   const [moviesNews, seriesNews, animeNews] = await Promise.all([
     fetchRss('https://screenrant.com/feed/category/movie-news/'),
     fetchRss('https://screenrant.com/feed/category/tv-news/'),
-    fetchRss('https://www.animenewsnetwork.com/news/rss.xml'),
+    fetchRss('https://comicbook.com/anime/feed/'),
   ]);
 
   const renderSection = (title: string, items: any[], category: string) => {
